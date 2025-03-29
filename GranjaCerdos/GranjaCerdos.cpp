@@ -1615,9 +1615,10 @@ void mostrarColaEmpleados(ColaEmpleado q) {
 		gotoxy(columna + 2, fila + 4); cout << "Cargo: " << aux->cargo;
 		gotoxy(columna + 2, fila + 5); cout << "Telefono: " << aux->telefono;
 		gotoxy(columna + 2, fila + 6); cout << "Fecha de Contratacion: " << aux->fechaContratacion;
-		gotoxy(columna, fila + 7); cout << "----------------------------------";
+		gotoxy(columna + 2, fila + 7); cout << "Direccion de memoria: " << aux;
+		gotoxy(columna, fila + 8); cout << "----------------------------------";
 
-		ultimaFila = fila + 7; // Guarda la última fila usada por la ficha actual
+		ultimaFila = fila + 8; // Guarda la última fila usada por la ficha actual
 
 		contador++;
 		if (contador % 3 == 0) {
@@ -1696,7 +1697,7 @@ void gestionarBusquedaEmpleados(ColaEmpleado q) {
 		}
 
 		gotoxy(45, filaFinal + 2); cout << "Desea buscar otro empleado? (S/N): ";
-		rpt = leerCaracter("", "SN", 45, filaFinal + 2);
+		rpt = leerCaracter("", "SN", 45, filaFinal + 20);
 
 	} while (rpt == 'S' || rpt == 's');
 
@@ -1743,7 +1744,7 @@ void eliminarEmpleado(ColaEmpleado& q) {
 
 		// Preguntar si desea eliminar el empleado
 		gotoxy(40, 22); cout << "Desea eliminar este empleado? (S/N): ";
-		respuesta = leerCaracter("", "SN", 40, 22);
+		respuesta = leerCaracter("", "SN", 40, 59);
 
 		if (respuesta == 'S' || respuesta == 's') {
 			// Eliminar el primer empleado de la cola
@@ -1752,10 +1753,13 @@ void eliminarEmpleado(ColaEmpleado& q) {
 				q.atras = nullptr; // Si la cola queda vacía, actualizar el puntero 'atras'
 			}
 			delete temp;
-
+			system("cls");
+			TituloEliminaTrabajador();
 			gotoxy(45, 24); cout << "Empleado eliminado correctamente.";
 		}
 		else {
+			system("cls");
+			TituloEliminaTrabajador();
 			gotoxy(50, 24); cout << "Operacion cancelada.";
 		}
 
@@ -1763,7 +1767,9 @@ void eliminarEmpleado(ColaEmpleado& q) {
 		mostrarColaEmpleados(q);
 
 		if (!q.delante) {
-			gotoxy(45, 26); cout << "No hay más empleados en la cola.";
+			system("cls");
+			TituloEliminaTrabajador();
+			gotoxy(45, 26); cout << "No hay mas empleados en la cola.";
 			break;
 		}
 
@@ -1771,8 +1777,9 @@ void eliminarEmpleado(ColaEmpleado& q) {
 		respuesta = leerCaracter("", "SN", 45, 26);
 
 	} while ((respuesta == 'S' || respuesta == 's') && q.delante != nullptr);
+	TituloEliminaTrabajador();
 
-	gotoxy(35, 28); cout << "Operacion finalizada. Presione una tecla para volver al menu de cola...";
+	gotoxy(35, 15); cout << "Operacion finalizada. Presione una tecla para volver al menu de cola...";
 	_getch();
 }
 
