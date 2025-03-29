@@ -1762,7 +1762,7 @@ void eliminarEmpleado(ColaEmpleado& q) {
 			TituloEliminaTrabajador();
 			gotoxy(50, 24); cout << "Operacion cancelada.";
 		}
-
+		 
 		// Mostrar la cola actualizada después de eliminar
 		mostrarColaEmpleados(q);
 
