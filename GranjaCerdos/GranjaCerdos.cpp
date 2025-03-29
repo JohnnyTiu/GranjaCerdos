@@ -540,10 +540,12 @@ void ProgramaPrincipal()
 	int codigoBuscado = 0;
 
 	do {
+		system("color 1F");  // Fondo azul, letra blanca brillante
 		opcionMenuPrincipal = MenuPrincipal(tituloMenuPrincipal, opcionesMenuPrincipal, nOpcionesMenuPrincipal);
 		switch (opcionMenuPrincipal) {
 		case 1:
 			do {
+				system("color 2E");  // Fondo verde, letra amarilla clara
 				opcionMenuPila = MenuPila(tituloMenuPila, opcionesMenuPila, nOpcionesMenuPila);
 				switch (opcionMenuPila) {
 				case 1:
@@ -640,6 +642,7 @@ void ProgramaPrincipal()
 			break;
 		case 2:
 			do {
+				system("color 4F");  // Fondo rojo, letra blanca brillante
 				opcionMenuCola = MenuCola(tituloMenuCola, opcionesMenuCola, nOpcionesMenuCola);
 				switch (opcionMenuCola) {
 				case 1:
@@ -685,6 +688,7 @@ void ProgramaPrincipal()
 			break;
 		case 3:
 			do {
+				system("color 0A");
 				opcionMenuLista = MenuLista(tituloMenuLista, opcionesMenuLista, nOpcionesMenuLista);
 				switch (opcionMenuLista)
 				{
@@ -738,6 +742,7 @@ void ProgramaPrincipal()
 			break;
 		case 4:
 			do {
+				system("color 89"); 
 				opcionMenuListaDoble = MenuListaDoble(tituloMenuListaDoble, opcionesMenuListaDoble, nOpcionesMenuListaDoble);
 				switch (opcionMenuListaDoble)
 				{
@@ -842,8 +847,10 @@ void ProgramaPrincipal()
 					break;
 				}
 			} while (opcionMenuListaDoble != 7 && repite);
+			break;
 		case 5:
 			do {
+				system("color 6C");  // Fondo amarillo, letra rojo claro
 				opcionMenuListaCircular = MenuListaCircular(tituloMenuListaCircular, opcionesMenuListaCircular, nOpcionesMenuListaCircular);
 				switch (opcionMenuListaCircular) {
 				case 1:
@@ -2320,6 +2327,7 @@ void eliminarCompradores(Comprador*& compradores, int idCompradorBuscado)
 	gotoxy(40, 8); cout << "Presione una tecla para volver al menú de compradores...";
 	_getch();
 }
+
 void agregarAlimento(Alimento*& cabeza, Alimento*& cola, int codigo, string marca, string fechaCaducacion,
 	int cantidad, string categoria, string proveedor, float precio, string paisOrigen) {
 	Alimento* nuevo = new Alimento();
@@ -2663,7 +2671,10 @@ void vaciarListaAlimentos(Alimento*& cabeza, Alimento*& cola) {
 }
 
 void InsertarProveedor(Lista* lista, int id, string nombre, string direccion, string telefono, string correo, string productos, string fechaRegistro, string estado) {
+	// Crear un nuevo nodo de tipo Proveedor
 	pNodo nuevo = new Proveedor();
+
+	// Asignar los valores pasados como parámetros al nuevo nodo
 	nuevo->id = id;
 	nuevo->nombre = nombre;
 	nuevo->direccion = direccion;
@@ -2673,31 +2684,44 @@ void InsertarProveedor(Lista* lista, int id, string nombre, string direccion, st
 	nuevo->fechaRegistro = fechaRegistro;
 	nuevo->estado = estado;
 
+	// Caso 1: Si la lista está vacía, el nuevo nodo se convierte en la lista
 	if (!*lista) {
 		*lista = nuevo;
-		nuevo->siguiente = nuevo; // Lista circular
+		nuevo->siguiente = nuevo; // Se apunta a sí mismo, formando una lista circular
 	}
-	else if (id < (*lista)->id) { // Insertar al inicio
-		pNodo actual = *lista;
+	// Caso 2: Insertar al inicio si el ID del nuevo proveedor es menor al ID del primer nodo
+	else if (id < (*lista)->id) {
+		pNodo actual = *lista;	// Nodo actual para recorrer la lista
+
+		// Recorrer la lista para encontrar el último nodo (que apunta al primero)
 		while (actual->siguiente != *lista) {
 			actual = actual->siguiente;
 		}
+
+		// Ajustar punteros para insertar el nuevo nodo al inicio
 		actual->siguiente = nuevo;
 		nuevo->siguiente = *lista;
-		*lista = nuevo;
+		*lista = nuevo; // Actualizar la lista para que apunte al nuevo nodo
 	}
-	else { // Insertar en medio o al final
+	// Caso 3: Insertar en medio o al final según el orden del ID
+	else {
 		pNodo actual = *lista;
+
+		// Recorrer la lista hasta encontrar la posición correcta para insertar
 		while (actual->siguiente != *lista && actual->siguiente->id < id) {
 			actual = actual->siguiente;
 		}
+
+		// Ajustar punteros para insertar el nuevo nodo en la posición correcta
 		nuevo->siguiente = actual->siguiente;
 		actual->siguiente = nuevo;
 	}
 
-	// Mostrar mensaje de confirmación
-	gotoxy(35, 17); cout << "Proveedor con el ID " << id << " agregado exitosamente." << endl;
+	// Mostrar mensaje de confirmación en la pantalla con gotoxy
+	gotoxy(35, 17);
+	cout << "Proveedor con el ID " << id << " agregado exitosamente." << endl;
 }
+
 
 void BorrarProveedor(Lista* lista, int id) {
 	pNodo actual = *lista;
@@ -2707,16 +2731,16 @@ void BorrarProveedor(Lista* lista, int id) {
 
 	// Buscar el proveedor en la lista
 	do {
-		if (actual->id == id) {
+		if (actual->id == id) {	// Proveedor encontrado
 			encontrado = true;
 			break;
 		}
-		anterior = actual;
-		actual = actual->siguiente;
-		contador++;
-	} while (actual != *lista);
+		anterior = actual;	// Guardar el nodo actual como anterior
+		actual = actual->siguiente;	// Avanzar al siguiente nodo
+		contador++;	// Incrementar el contador de posición
+	} while (actual != *lista);	// Repetir hasta regresar al inicio
 
-	if (!encontrado) {
+	if (!encontrado) {	// Proveedor no encontrado
 		gotoxy(40, 8); cout << "Proveedor con ID " << id << " no encontrado." << endl;
 		gotoxy(45, 10); cout << "Presione una tecla para continuar...";
 		_getch();
@@ -2735,10 +2759,10 @@ void BorrarProveedor(Lista* lista, int id) {
 	gotoxy(45, 16); cout << "Estado: " << actual->estado << endl;
 
 	// Determinar la posición en la lista
-	if (actual == *lista) {
+	if (actual == *lista) {	// Nodo actual es el primero
 		gotoxy(45, 17); cout << "Posicion en la lista: Primero" << endl;
 	}
-	else if (actual->siguiente == *lista) {
+	else if (actual->siguiente == *lista) {	// Nodo actual es el último
 		gotoxy(45, 17); cout << "Posicion en la lista: Ultimo" << endl;
 	}
 	else {
@@ -2757,27 +2781,27 @@ void BorrarProveedor(Lista* lista, int id) {
 	}
 
 	// Caso especial: si el nodo a eliminar es el primero de la lista
-	if (actual == *lista) {
+	if (actual == *lista) {	// Nodo a eliminar es el primero
 		if (actual->siguiente == *lista) {
 			// Solo hay un nodo en la lista
-			delete actual;
-			*lista = nullptr;
+			delete actual;	// Eliminar el nodo
+			*lista = nullptr;	// Actualizar la lista
 		}
 		else {
 			// Hay más de un nodo en la lista
-			anterior = *lista;
-			while (anterior->siguiente != *lista) {
-				anterior = anterior->siguiente;
+			anterior = *lista;	// Nodo anterior al primero
+			while (anterior->siguiente != *lista) {	// Encontrar el último nodo
+				anterior = anterior->siguiente;	// Avanzar al siguiente nodo
 			}
-			anterior->siguiente = (*lista)->siguiente;
-			*lista = (*lista)->siguiente;
-			delete actual;
+			anterior->siguiente = (*lista)->siguiente;	// Actualizar el enlace
+			*lista = (*lista)->siguiente;	// Actualizar la lista
+			delete actual;	// Eliminar el nodo
 		}
 	}
 	else {
 		// Nodo encontrado, eliminarlo
-		anterior->siguiente = actual->siguiente;
-		delete actual;
+		anterior->siguiente = actual->siguiente;	// Actualizar el enlace
+		delete actual;	// Eliminar el nodo
 	}
 
 	gotoxy(40, 24); cout << "Proveedor con ID " << id << " eliminado." << endl;
@@ -2792,7 +2816,7 @@ void MostrarProveedores(Lista lista) {
 		return;
 	}
 
-	pNodo actual = lista;
+	pNodo actual = lista; // Nodo actual para recorrer la lista
 	int contador = 1; // Contador para la posición de cada proveedor
 	cout << endl;
 	do {
@@ -2806,10 +2830,10 @@ void MostrarProveedores(Lista lista) {
 		cout << "\t\t\t\t\tEstado: " << actual->estado << endl;
 
 		// Determinar la posición en la lista
-		if (actual == lista) {
+		if (actual == lista) {	// Nodo actual es el primero
 			cout << "\t\t\t\t\tPosicion en la lista: Primero" << endl;
 		}
-		else if (actual->siguiente == lista) {
+		else if (actual->siguiente == lista) {	// Nodo actual es el último
 			cout << "\t\t\t\t\tPosicion en la lista: Ultimo" << endl;
 		}
 		else {
@@ -2821,9 +2845,9 @@ void MostrarProveedores(Lista lista) {
 		cout << "\t\t\t\t\t------------------------------------------" << endl;
 
 		// Avanzar al siguiente proveedor
-		actual = actual->siguiente;
+		actual = actual->siguiente;	// Avanzar al siguiente nodo
 		contador++;
-	} while (actual != lista);
+	} while (actual != lista);	// Repetir hasta regresar al inicio
 
 	cout << endl;
 	cout << "\t\t\t\t\tPresione una tecla para volver al menu..." << endl;
@@ -2831,7 +2855,7 @@ void MostrarProveedores(Lista lista) {
 }
 
 void BuscarProveedor(Lista lista, int id) {
-	pNodo actual = lista;
+	pNodo actual = lista;	// Nodo actual para recorrer la lista
 	bool encontrado = false;
 	int contador = 1; // Contador para la posición de cada proveedor
 
@@ -2849,10 +2873,10 @@ void BuscarProveedor(Lista lista, int id) {
 			gotoxy(40, 16); cout << "Estado: " << actual->estado << endl;
 
 			// Determinar la posición en la lista
-			if (actual == lista) {
+			if (actual == lista) {	// Nodo actual es el primero
 				gotoxy(40, 17); cout << "Posicion en la lista: Primero" << endl;
 			}
-			else if (actual->siguiente == lista) {
+			else if (actual->siguiente == lista) {	// Nodo actual es el último
 				gotoxy(40, 17); cout << "Posicion en la lista: Ultimo" << endl;
 			}
 			else {
@@ -2865,9 +2889,9 @@ void BuscarProveedor(Lista lista, int id) {
 			encontrado = true;
 			break;
 		}
-		actual = actual->siguiente;
+		actual = actual->siguiente;	// Avanzar al siguiente nodo
 		contador++;
-	} while (actual != lista);
+	} while (actual != lista);	// Repetir hasta regresar al inicio
 
 	if (!encontrado) {
 		gotoxy(40, 8); cout << "Proveedor con ID " << id << " no encontrado." << endl;
@@ -2891,29 +2915,29 @@ void modificarProveedor(Lista* lista) {
 
 		// Mostrar lista de proveedores para referencia
 		gotoxy(35, 6); cout << "Lista actual de proveedores:";
-		pNodo aux = *lista;
+		pNodo aux = *lista;	// Nodo auxiliar para recorrer la lista
 		int contador = 1;
 		do {
 			gotoxy(35, 6 + contador);
 			cout << contador << ". ID: " << aux->id << " - " << aux->nombre;
 			aux = aux->siguiente;
 			contador++;
-		} while (aux != *lista);
+		} while (aux != *lista);	// Repetir hasta regresar al inicio
 
 		// Solicitar ID del proveedor a modificar
 		idBuscado = leerEntero("\nIngrese el ID del proveedor a modificar: ", 35, 6 + contador + 1);
 
 		// Buscar el proveedor
-		pNodo actual = *lista;
+		pNodo actual = *lista;	// Nodo actual para recorrer la lista
 		bool encontrado = false;
 
 		do {
-			if (actual->id == idBuscado) {
+			if (actual->id == idBuscado) {	// Proveedor encontrado
 				encontrado = true;
 				break;
 			}
 			actual = actual->siguiente;
-		} while (actual != *lista);
+		} while (actual != *lista);	// Repetir hasta regresar al inicio
 
 		if (!encontrado) {
 			gotoxy(35, 6 + contador + 3);
@@ -3016,7 +3040,7 @@ void VaciarListaProveedores(Lista* lista) {
 	}
 
 	// Mostrar la lista de proveedores
-	MostrarProveedores(*lista);
+	MostrarProveedores(*lista);	// Mostrar la lista actual
 
 	system("cls");
 	TituloVaciarListaProveedores();
@@ -3029,15 +3053,15 @@ void VaciarListaProveedores(Lista* lista) {
 		return;
 	}
 
-	pNodo actual = *lista;
-	pNodo siguiente;
+	pNodo actual = *lista;	// Nodo actual para recorrer la lista
+	pNodo siguiente;	// Nodo siguiente para recorrer la lista
 
 	// Recorrer la lista y eliminar cada nodo
 	do {
-		siguiente = actual->siguiente;
-		delete actual;
-		actual = siguiente;
-	} while (actual != *lista);
+		siguiente = actual->siguiente;	// Guardar el siguiente nodo
+		delete actual;	// Eliminar el nodo actual
+		actual = siguiente;	// Avanzar al siguiente nodo
+	} while (actual != *lista);	// Repetir hasta regresar al inicio
 
 	// Establecer la lista como vacía
 	*lista = nullptr;
