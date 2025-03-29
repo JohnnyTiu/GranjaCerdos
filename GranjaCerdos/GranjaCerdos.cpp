@@ -15,6 +15,8 @@
 #include <Windows.h>
 #include <string>
 #include <limits> // Incluir la librería <limits>
+#pragma comment(lib, "winmm.lib")
+
 
 
 using namespace std;
@@ -202,6 +204,7 @@ int main() {
 	// Registra la función de manejo de eventos de control
 	SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 
+	PlaySound(TEXT("C:\\Users\\Johnn\\OneDrive\\Documentos\\5semestre\\Progra3\\GranjaCerdos\\granja.mp3"), NULL, SND_ASYNC);
 	// Llama a las funciones del programa
 	umg();
 	Integrantes();
@@ -396,7 +399,9 @@ void PantallaLogo() {
 	SetConsoleTextAttribute(hConsole, 7); // Fondo negro y texto blanco
 }
 
-void ProgramaPrincipal() {
+void ProgramaPrincipal() 
+{
+	
 	system("cls");
 	bool repite = true;
 
@@ -731,110 +736,111 @@ void ProgramaPrincipal() {
 			} while (opcionMenuLista != 7 && repite);
 			break;
 		case 4:
-			opcionMenuListaDoble = MenuListaDoble(tituloMenuListaDoble, opcionesMenuListaDoble, nOpcionesMenuListaDoble);
-			switch (opcionMenuListaDoble)
-			{
-			case 1:
-				do
+			do {
+				opcionMenuListaDoble = MenuListaDoble(tituloMenuListaDoble, opcionesMenuListaDoble, nOpcionesMenuListaDoble);
+				switch (opcionMenuListaDoble)
 				{
+				case 1:
+					do
+					{
+						system("cls");
+						TituloIngresaAlimento();
+						gotoxy(35, 6); cout << "-------------------------------------------------------";
+						int codigo = leerEntero("Ingrese el codigo del alimento: ", 35, 7);
+						string marca = leerCadena("Ingrese la marca del alimento: ", 35, 8);
+						string fechaCad = leerCadena("Ingrese la fecha de caducidad (dd/mm/aa): ", 35, 9);
+						int cantidad = leerEntero("Ingrese la cantidad disponible: ", 35, 10);
+						string categoria = leerCadena("Ingrese la categoria del alimento: ", 35, 11);
+						string proveedor = leerCadena("Ingrese el proveedor: ", 35, 12);
+						float precio = leerDecimal("Ingrese el precio: ", 35, 13);
+						string paisOrigen = leerCadena("Ingrese el pais de origen: ", 35, 14);
+						gotoxy(35, 15); cout << "-------------------------------------------------------";
+
+						agregarAlimento(cabeza, cola, codigo, marca, fechaCad, cantidad, categoria, proveedor, precio, paisOrigen);
+						rpt = leerCaracter("Desea ingresar otro alimento? (S/N): ", "SN", 40, 17);
+
+					} while (rpt == 'S' || rpt == 's');
 					system("cls");
-					TituloIngresaAlimento();
-					gotoxy(35, 6); cout << "-------------------------------------------------------";
-					int codigo = leerEntero("Ingrese el codigo del alimento: ", 35, 7);
-					string marca = leerCadena("Ingrese la marca del alimento: ", 35, 8);
-					string fechaCad = leerCadena("Ingrese la fecha de caducidad (dd/mm/aa): ", 35, 9);
-					int cantidad = leerEntero("Ingrese la cantidad disponible: ", 35, 10);
-					string categoria = leerCadena("Ingrese la categoria del alimento: ", 35, 11);
-					string proveedor = leerCadena("Ingrese el proveedor: ", 35, 12);
-					float precio = leerDecimal("Ingrese el precio: ", 35, 13);
-					string paisOrigen = leerCadena("Ingrese el pais de origen: ", 35, 14);
-					gotoxy(35, 15); cout << "-------------------------------------------------------";
-
-					agregarAlimento(cabeza, cola, codigo, marca, fechaCad, cantidad, categoria, proveedor, precio, paisOrigen);
-					rpt = leerCaracter("Desea ingresar otro alimento? (S/N): ", "SN", 40, 17);
-
-				} while (rpt == 'S' || rpt == 's');
-				system("cls");
-				TituloVerAlimento();
-				mostrarListaAlimentos(cabeza);
-				_getch();
-				break;
-			case 2:
-				system("cls");
-				TituloVerAlimento();
-				mostrarListaAlimentos(cabeza);
-				_getch();
-				break;
-			case 3:
-				do {
+					TituloVerAlimento();
+					mostrarListaAlimentos(cabeza);
+					_getch();
+					break;
+				case 2:
 					system("cls");
-					TituloBuscarAlimento();
+					TituloVerAlimento();
+					mostrarListaAlimentos(cabeza);
+					_getch();
+					break;
+				case 3:
+					do {
+						system("cls");
+						TituloBuscarAlimento();
 
+						if (cabeza == nullptr) {
+							gotoxy(40, 6); cout << "La lista esta vacia. No hay alimentos registrados para buscar.";
+							gotoxy(40, 8); cout << "Presione una tecla para volver al menu de alimentos...";
+							_getch();
+							break;
+						}
+						else {
+							gotoxy(45, 7); cout << "Ingrese el codigo del alimento a buscar: ";
+							cin >> codigoBuscado;
+							Alimento* alimentoEncontrado = buscarAlimento(cabeza, codigoBuscado);
+
+							if (alimentoEncontrado != nullptr) {
+								gotoxy(35, 9); cout << "------------------------------------------------";
+								gotoxy(40, 10); cout << "Informacion del alimento con codigo " << alimentoEncontrado->codigo;
+								gotoxy(35, 11); cout << "------------------------------------------------";
+								gotoxy(35, 12); cout << "Marca: " << alimentoEncontrado->marca;
+								gotoxy(35, 13); cout << "Fecha de caducidad: " << alimentoEncontrado->fechaCaducacion;
+								gotoxy(35, 14); cout << "Cantidad: " << alimentoEncontrado->cantidad;
+								gotoxy(35, 15); cout << "Categoria: " << alimentoEncontrado->categoria;
+								gotoxy(35, 16); cout << "Proveedor: " << alimentoEncontrado->proveedor;
+								gotoxy(35, 17); cout << "Precio: " << alimentoEncontrado->precio;
+								gotoxy(35, 18); cout << "Pais de origen: " << alimentoEncontrado->paisOrigen;
+								gotoxy(35, 19); cout << "------------------------------------------------";
+							}
+							else {
+								gotoxy(45, 9); cout << "No se encontro ningun alimento con el codigo " << codigoBuscado << ".";
+							}
+
+							gotoxy(40, 24); cout << "¿Desea buscar otro alimento? (S/N): ";
+							cin >> rpt;
+						}
+					} while (rpt == 'S' || rpt == 's');
+					break;
+				case 4:
+					system("cls");
+					TituloModificarAlimento();
+					modificarAlimento(cabeza);
+					break;
+				case 5:
+					system("cls");
+					TituloEliminarAlimento();
 					if (cabeza == nullptr) {
-						gotoxy(40, 6); cout << "La lista esta vacia. No hay alimentos registrados para buscar.";
+						gotoxy(40, 6); cout << "La lista esta vacia. No hay alimentos para eliminar.";
 						gotoxy(40, 8); cout << "Presione una tecla para volver al menu de alimentos...";
 						_getch();
 						break;
 					}
-					else {
-						gotoxy(45, 7); cout << "Ingrese el codigo del alimento a buscar: ";
-						cin >> codigoBuscado;
-						Alimento* alimentoEncontrado = buscarAlimento(cabeza, codigoBuscado);
-
-						if (alimentoEncontrado != nullptr) {
-							gotoxy(35, 9); cout << "------------------------------------------------";
-							gotoxy(40, 10); cout << "Informacion del alimento con codigo " << alimentoEncontrado->codigo;
-							gotoxy(35, 11); cout << "------------------------------------------------";
-							gotoxy(35, 12); cout << "Marca: " << alimentoEncontrado->marca;
-							gotoxy(35, 13); cout << "Fecha de caducidad: " << alimentoEncontrado->fechaCaducacion;
-							gotoxy(35, 14); cout << "Cantidad: " << alimentoEncontrado->cantidad;
-							gotoxy(35, 15); cout << "Categoria: " << alimentoEncontrado->categoria;
-							gotoxy(35, 16); cout << "Proveedor: " << alimentoEncontrado->proveedor;
-							gotoxy(35, 17); cout << "Precio: " << alimentoEncontrado->precio;
-							gotoxy(35, 18); cout << "Pais de origen: " << alimentoEncontrado->paisOrigen;
-							gotoxy(35, 19); cout << "------------------------------------------------";
-						}
-						else {
-							gotoxy(45, 9); cout << "No se encontro ningun alimento con el codigo " << codigoBuscado << ".";
-						}
-
-						gotoxy(40, 24); cout << "¿Desea buscar otro alimento? (S/N): ";
-						cin >> rpt;
-					}
-				} while (rpt == 'S' || rpt == 's');
-				break;
-			case 4:
-				system("cls");
-				TituloModificarAlimento();
-				modificarAlimento(cabeza);
-				break;
-			case 5:
-				system("cls");
-				TituloEliminarAlimento();
-				if (cabeza == nullptr) {
-					gotoxy(40, 6); cout << "La lista esta vacia. No hay alimentos para eliminar.";
-					gotoxy(40, 8); cout << "Presione una tecla para volver al menu de alimentos...";
+					gotoxy(45, 7); cout << "Ingrese el codigo del alimento a eliminar: ";
+					cin >> codigoBuscado;
+					eliminarAlimento(cabeza, cola, codigoBuscado);
 					_getch();
 					break;
+				case 6:
+					system("cls");
+					TituloVaciarListaAlimento();
+					vaciarListaAlimentos(cabeza, cola);
+					_getch();
+					break;
+				case 7:
+					break;
+				case 8:
+					repite = false;
+					break;
 				}
-				gotoxy(45, 7); cout << "Ingrese el codigo del alimento a eliminar: ";
-				cin >> codigoBuscado;
-				eliminarAlimento(cabeza, cola, codigoBuscado);
-				_getch();
-				break;
-			case 6:
-				system("cls");
-				TituloVaciarListaAlimento();
-				vaciarListaAlimentos(cabeza, cola);
-				_getch();
-				break;
-			case 7:
-				break;
-			case 8:
-				repite = false;
-				break;
-			}
-			break;
+			} while (opcionMenuListaDoble != 7 && repite);
 		case 5:
 			do {
 				opcionMenuListaCircular = MenuListaCircular(tituloMenuListaCircular, opcionesMenuListaCircular, nOpcionesMenuListaCircular);
