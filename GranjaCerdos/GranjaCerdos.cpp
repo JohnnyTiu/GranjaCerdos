@@ -11,6 +11,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <conio.h>
+#include <stdio.h>
 #include <Windows.h>
 #include <string>
 #include <limits> // Incluir la librería <limits>
@@ -75,6 +76,36 @@ struct Comprador
 	Comprador* sgte;
 };
 
+struct Proveedor {
+	int id;
+	string nombre;
+	string direccion;
+	string telefono;
+	string correo;
+	string productos;
+	string fechaRegistro;
+	string estado;
+	struct Proveedor* siguiente;
+};
+
+// Estructura para Alimentos (Lista Doblemente Enlazada)
+struct Alimento {
+	int codigo;
+	string marca;
+	string fechaCaducacion;
+	int cantidad;
+	string categoria;
+	string proveedor;
+	float precio;
+	string paisOrigen;
+	struct Alimento* anterior;
+	struct Alimento* siguiente;
+};
+
+
+typedef Proveedor* Lista;
+typedef Proveedor* pNodo;
+
 void umg();
 void Integrantes();
 void PantallaLogo();
@@ -86,25 +117,21 @@ void TituloVerCerdos();
 void TituloBuscarCerdo();
 void TituloModificarCerdo();
 void TituloEliminarCerdo();
+void TituloVaciarPila();
 void agregarPila(Cerdo*& pila, int& arete, int& modulo, string& raza, char& sexo, float& peso, float& altura, string& nacimiento, int& edad, char& salud, string& ultVac, string& feUlVac, float& alimento, string& procede, char& venta, float& precio, string& destino);
 void mostrarPila(Cerdo* pila);
 void buscarCerdo(Cerdo* pila, int areteBuscado, Cerdo*& cerdoEncontrado);
 void modificarCerdo(Cerdo* pila);
 void eliminarCerdosPila(Cerdo*& pila);
 void sacarPila(Cerdo*& pila);
+void vaciarPila(Cerdo*& pila);
 int MenuCola(const char* tituloMenuCola, const char* opcionesMenuCola[], int nOpcionesMenuCola);
 void TituloIngresaTrabajador();
 void TituloVerTrabajadores();
 void TituloBuscarTrabajador();
 void TituloModificarTrabajador();
 void TituloEliminaTrabajador();
-int MenuLista(const char* tituloMenuLista, const char* opcionesMenuLista[], int nOpciones);
-void TituloIngresaComprador();
-void TituloVerCompradores();
-void TituloBuscarComprador();
-void TituloModificarComprador();
-void TituloEliminaComprador();
-void TituloVaciarLista();
+void TituloVaciarCola();
 //Prototipos para el manejo de funciones de los empleados
 Empleado* crearEmpleado();
 void encolarEmpleado(ColaEmpleado& q, Empleado* nuevo);
@@ -114,7 +141,15 @@ Empleado* buscarEmpleado(ColaEmpleado q, int idEmpleadoBuscado);
 void gestionarBusquedaEmpleados(ColaEmpleado q);
 void modificarEmpleado(ColaEmpleado& q);
 void eliminarEmpleado(ColaEmpleado& q);
+void vaciarCola(ColaEmpleado& q);
 //prototipos para el manejo de funiones de los compradores
+int MenuLista(const char* tituloMenuLista, const char* opcionesMenuLista[], int nOpciones);
+void TituloIngresaComprador();
+void TituloVerCompradores();
+void TituloBuscarComprador();
+void TituloModificarComprador();
+void TituloEliminaComprador();
+void TituloVaciarLista();
 Comprador* CrearComprador();
 void insertarComprador(Comprador*& compradores, Comprador* nuevo);
 void gestionarIngresoCompradores(Comprador*& compradores);
@@ -123,6 +158,34 @@ Comprador* buscarComprador(Comprador* compradores, int idCompradorBuscado);
 void modificarComprador(Comprador*& compradores);
 void sacarComprador(Comprador*& compradores, int idCompradorBuscado);
 void eliminarCompradores(Comprador*& compradores, int idCompradorBuscado);
+//Prototipos para el menejo de funciones de productos (Lista doble)
+int MenuListaDoble(const char* tituloMenuListaDoble, const char* opcionesMenuListaDoble[], int nOpcionesMenuListaDoble);
+void TituloIngresaAlimento();
+void TituloVerAlimento();
+void TituloBuscarAlimento();
+void TituloModificarAlimento();
+void TituloEliminarAlimento();
+void TituloVaciarListaAlimento();
+void agregarAlimento(Alimento*& cabeza, Alimento*& cola, int codigo, string marca, string fechaCaducacion, int cantidad, string categoria, string proveedor, float precio, string paisOrigen);
+int contarElementos(Alimento* cabeza0);
+void mostrarListaAlimentos(Alimento* cabeza);
+Alimento* buscarAlimento(Alimento* cabeza, int codigoBuscado);
+void modificarAlimento(Alimento* cabeza);
+void eliminarAlimento(Alimento*& cabeza, Alimento*& cola, int codigoBuscado);
+void vaciarListaAlimentos(Alimento*& cabeza, Alimento*& cola);
+//Prototipos para el manejo de funciones de proveedores (Lista circular)
+int MenuListaCircular(const char* tituloMenuListaCircular, const char* opcionesMenuListaCircular[], int nOpcionesListaCircular);
+void TituloInsertaProveedor();
+void TituloVerProveedores();
+void TituloModificarProveedor();
+void TituloBuscarProveedor();
+void TituloEliminarProveedor();
+void TituloVaciarListaProveedores();
+void InsertarProveedor(Lista* lista, int id, string nombre, string direccion, string telefono, string correo, string productos, string fechaRegistro, string estado);
+void BorrarProveedor(Lista* lista, int id);
+void MostrarProveedores(Lista lista);
+void BuscarProveedor(Lista lista, int id);
+void VaciarListaProveedores(Lista* lista);
 //Prototipos para el manejo de funciones de los proveedores
 void gotoxy(int, int);
 int leerEntero(string mensaje, int x, int y);
@@ -338,22 +401,30 @@ void ProgramaPrincipal() {
 	bool repite = true;
 
 	int opcionMenuPrincipal;
-	int nOpcionesMenuPrincipal = 4;
+	int nOpcionesMenuPrincipal = 6;
 
 	int opcionMenuPila;
-	int nOpcionesMenuPila = 7;
+	int nOpcionesMenuPila = 8;
 
 	int opcionMenuCola;
-	int nOpcionesMenuCola = 7;
+	int nOpcionesMenuCola = 8;
 
 	int opcionMenuLista;
 	int nOpcionesMenuLista = 8;
+
+	int opcionMenuListaDoble;
+	int nOpcionesMenuListaDoble = 8;
+
+	int opcionMenuListaCircular;
+	int nOpcionesMenuListaCircular = 8;
 
 	const char* tituloMenuPrincipal = "Menu Principal de la Granja";
 	const char* opcionesMenuPrincipal[] = {
 		"Gestionar Informacion de los cerdos (Pila)",
 		"Gestionar Informacion de trabajadores (Cola)",
-		"Gestionar Informacion de Compradores (Lista)",
+		"Gestionar Informacion de los Compradores (Lista simple)",
+		"Gestionar Informacion de los Productos (Lista doble)",
+		"Gestionar Informacion de los proveedores (Lista circular)",
 		"Salir del programa"
 	};
 
@@ -364,6 +435,7 @@ void ProgramaPrincipal() {
 		"Buscar cerdo",
 		"Modificar informacion de algun cerdo",
 		"Eliminar cerdo",
+		"Vaciar pila de cerdos",
 		"Regresar al menu principal",
 		"Salir del programa"
 	};
@@ -375,6 +447,7 @@ void ProgramaPrincipal() {
 		"Buscar a un trabajador",
 		"Modificar la informacion de algun trabajador",
 		"Eliminar a un trabajador",
+		"Vaciar cola d trabajadores",
 		"Regresar al menu principal",
 		"Salir del programa"
 	};
@@ -387,6 +460,30 @@ void ProgramaPrincipal() {
 		"Modificar la informacion de un comprador",
 		"Eliminar a un comprador",
 		"Vaciar la lista de compradores",
+		"Regresar al menu principal",
+		"Salir del programa"
+	};
+
+	const char* tituloMenuListaDoble = "Gestion de Alimentos (Lista Doblemente Enlazada)";
+	const char* opcionesMenuListaDoble[] = {
+		"Ingresar un nuevo alimento",
+		"Ver alimentos registrados",
+		"Buscar un alimento",
+		"Modificar informacion de un alimento",
+		"Eliminar un alimento",
+		"Vaciar la lista de alimentos",
+		"Regresar al menu principal",
+		"Salir del programa"
+	};
+
+	const char* tituloMenuListaCircular = "Gestionar Proveedores (Lista Circular)";
+	const char* opcionesMenuListaCircular[] = {
+		"Ingresar proveedores",
+		"Buscar proveedores",
+		"Modificar proveedores",
+		"Eliminar proveedores",
+		"Ver lista proveedores",
+		"Vaciar lista de proveedores",
 		"Regresar al menu principal",
 		"Salir del programa"
 	};
@@ -413,9 +510,28 @@ void ProgramaPrincipal() {
 	ColaEmpleado empleados;
 	int idEmpleadoBuscado = 0;
 	int areteBuscado;
+	Cerdo* cerdoEncontrado = nullptr;
+
 	Comprador* compradores = nullptr;
 	int idCompradorBuscado = 0;
-	Cerdo* cerdoEncontrado = nullptr;
+
+
+	int id = 0;
+	string nombre;
+	string direccion;
+	string telefono;
+	string correo;
+	string productos;
+	string fechaRegistro;
+	string estado;
+
+
+	Lista* lista = new Proveedor*; // Inicializar la lista correctamente
+	*lista = nullptr; // Inicializar la lista a un estado vacío
+
+	Alimento* cabeza = nullptr;
+	Alimento* cola = nullptr;
+	int codigoBuscado = 0;
 
 	do {
 		opcionMenuPrincipal = MenuPrincipal(tituloMenuPrincipal, opcionesMenuPrincipal, nOpcionesMenuPrincipal);
@@ -480,10 +596,10 @@ void ProgramaPrincipal() {
 							break;
 						}
 						else {
-							gotoxy(45, 7); cout << "Ingrese el arete del cerdo a buscar: "; cin >> areteBuscado;
+							gotoxy(45, 6); cout << "Ingrese el arete del cerdo a buscar: "; cin >> areteBuscado;
 							buscarCerdo(pila, areteBuscado, cerdoEncontrado);
 
-							gotoxy(40, 28); cout << "¿Desea buscar otro cerdo? (S/N): ";
+							gotoxy(45, 28); cout << "Desea buscar otro cerdo? (S/N): ";
 							cin >> rpt;
 						}
 					} while (rpt == 'S' || rpt == 's');
@@ -497,14 +613,24 @@ void ProgramaPrincipal() {
 					system("cls");
 					TituloEliminarCerdo();
 					eliminarCerdosPila(pila);
+
+					system("cls");
+					TituloEliminarCerdo();
+					gotoxy(50, 6); cout << "Pila actualizada...";
+					mostrarPila(pila);
 					break;
 				case 6:
+					system("cls");
+					TituloVaciarPila();
+					vaciarPila(pila);
 					break;
 				case 7:
+					break;
+				case 8:
 					repite = false;
 					break;
 				}
-			} while (opcionMenuPila != 6 && repite);
+			} while (opcionMenuPila != 7 && repite);
 			break;
 		case 2:
 			do {
@@ -539,12 +665,17 @@ void ProgramaPrincipal() {
 					eliminarEmpleado(q);
 					break;
 				case 6:
+					system("cls");
+					TituloVaciarCola();
+					vaciarCola(q);
 					break;
 				case 7:
+					break;
+				case 8:
 					repite = false;
 					break;
 				}
-			} while (opcionMenuCola != 6 && repite);
+			} while (opcionMenuCola != 7 && repite);
 			break;
 		case 3:
 			do {
@@ -552,10 +683,12 @@ void ProgramaPrincipal() {
 				switch (opcionMenuLista)
 				{
 				case 1:
-					system("cls");
-					TituloIngresaComprador();
-					gestionarIngresoCompradores(compradores);
-					_getch();
+					do {
+						system("cls");
+						TituloIngresaComprador();
+						gestionarIngresoCompradores(compradores);
+						gotoxy(45, 24); cout << "Desea ingresar otro comprador? (S/N): ";
+					} while (leerCaracter("", "SN", 45, 24) == 'S');
 					break;
 				case 2:
 					system("cls");
@@ -566,7 +699,7 @@ void ProgramaPrincipal() {
 				case 3:
 					system("cls");
 					TituloBuscarComprador();
-					gotoxy(5, 7); cout << "Ingrese el ID del comprador a buscar: "; cin >> idCompradorBuscado;
+					idCompradorBuscado = leerEntero("Ingrese el ID del comprador a buscar: ", 5, 7);
 					buscarComprador(compradores, idCompradorBuscado);
 					_getch();
 					break;
@@ -579,7 +712,7 @@ void ProgramaPrincipal() {
 				case 5:
 					system("cls");
 					TituloEliminaComprador();
-					gotoxy(5, 7); cout << "Ingrese el ID del comprador a eliminar: "; cin >> idCompradorBuscado;
+					idCompradorBuscado = leerEntero("Ingrese el ID del comprador a eliminar: ", 5, 7);
 					sacarComprador(compradores, idCompradorBuscado);
 					_getch();
 					break;
@@ -589,23 +722,224 @@ void ProgramaPrincipal() {
 					eliminarCompradores(compradores, idCompradorBuscado);
 					_getch();
 					break;
-
 				case 7:
-
 					break;
 				case 8:
 					repite = false;
 					break;
 				}
-			} while (opcionMenuLista != 8 && repite);
+			} while (opcionMenuLista != 7 && repite);
 			break;
 		case 4:
+			opcionMenuListaDoble = MenuListaDoble(tituloMenuListaDoble, opcionesMenuListaDoble, nOpcionesMenuListaDoble);
+			switch (opcionMenuListaDoble)
+			{
+			case 1:
+				do
+				{
+					system("cls");
+					TituloIngresaAlimento();
+					gotoxy(35, 6); cout << "-------------------------------------------------------";
+					int codigo = leerEntero("Ingrese el codigo del alimento: ", 35, 7);
+					string marca = leerCadena("Ingrese la marca del alimento: ", 35, 8);
+					string fechaCad = leerCadena("Ingrese la fecha de caducidad (dd/mm/aa): ", 35, 9);
+					int cantidad = leerEntero("Ingrese la cantidad disponible: ", 35, 10);
+					string categoria = leerCadena("Ingrese la categoria del alimento: ", 35, 11);
+					string proveedor = leerCadena("Ingrese el proveedor: ", 35, 12);
+					float precio = leerDecimal("Ingrese el precio: ", 35, 13);
+					string paisOrigen = leerCadena("Ingrese el pais de origen: ", 35, 14);
+					gotoxy(35, 15); cout << "-------------------------------------------------------";
+
+					agregarAlimento(cabeza, cola, codigo, marca, fechaCad, cantidad, categoria, proveedor, precio, paisOrigen);
+					rpt = leerCaracter("Desea ingresar otro alimento? (S/N): ", "SN", 40, 17);
+
+				} while (rpt == 'S' || rpt == 's');
+				system("cls");
+				TituloVerAlimento();
+				mostrarListaAlimentos(cabeza);
+				_getch();
+				break;
+			case 2:
+				system("cls");
+				TituloVerAlimento();
+				mostrarListaAlimentos(cabeza);
+				_getch();
+				break;
+			case 3:
+				do {
+					system("cls");
+					TituloBuscarAlimento();
+
+					if (cabeza == nullptr) {
+						gotoxy(40, 6); cout << "La lista esta vacia. No hay alimentos registrados para buscar.";
+						gotoxy(40, 8); cout << "Presione una tecla para volver al menu de alimentos...";
+						_getch();
+						break;
+					}
+					else {
+						gotoxy(45, 7); cout << "Ingrese el codigo del alimento a buscar: ";
+						cin >> codigoBuscado;
+						Alimento* alimentoEncontrado = buscarAlimento(cabeza, codigoBuscado);
+
+						if (alimentoEncontrado != nullptr) {
+							gotoxy(35, 9); cout << "------------------------------------------------";
+							gotoxy(40, 10); cout << "Informacion del alimento con codigo " << alimentoEncontrado->codigo;
+							gotoxy(35, 11); cout << "------------------------------------------------";
+							gotoxy(35, 12); cout << "Marca: " << alimentoEncontrado->marca;
+							gotoxy(35, 13); cout << "Fecha de caducidad: " << alimentoEncontrado->fechaCaducacion;
+							gotoxy(35, 14); cout << "Cantidad: " << alimentoEncontrado->cantidad;
+							gotoxy(35, 15); cout << "Categoria: " << alimentoEncontrado->categoria;
+							gotoxy(35, 16); cout << "Proveedor: " << alimentoEncontrado->proveedor;
+							gotoxy(35, 17); cout << "Precio: " << alimentoEncontrado->precio;
+							gotoxy(35, 18); cout << "Pais de origen: " << alimentoEncontrado->paisOrigen;
+							gotoxy(35, 19); cout << "------------------------------------------------";
+						}
+						else {
+							gotoxy(45, 9); cout << "No se encontro ningun alimento con el codigo " << codigoBuscado << ".";
+						}
+
+						gotoxy(40, 24); cout << "¿Desea buscar otro alimento? (S/N): ";
+						cin >> rpt;
+					}
+				} while (rpt == 'S' || rpt == 's');
+				break;
+			case 4:
+				system("cls");
+				TituloModificarAlimento();
+				modificarAlimento(cabeza);
+				break;
+			case 5:
+				system("cls");
+				TituloEliminarAlimento();
+				if (cabeza == nullptr) {
+					gotoxy(40, 6); cout << "La lista esta vacia. No hay alimentos para eliminar.";
+					gotoxy(40, 8); cout << "Presione una tecla para volver al menu de alimentos...";
+					_getch();
+					break;
+				}
+				gotoxy(45, 7); cout << "Ingrese el codigo del alimento a eliminar: ";
+				cin >> codigoBuscado;
+				eliminarAlimento(cabeza, cola, codigoBuscado);
+				_getch();
+				break;
+			case 6:
+				system("cls");
+				TituloVaciarListaAlimento();
+				vaciarListaAlimentos(cabeza, cola);
+				_getch();
+				break;
+			case 7:
+				break;
+			case 8:
+				repite = false;
+				break;
+			}
+			break;
+		case 5:
+			do {
+				opcionMenuListaCircular = MenuListaCircular(tituloMenuListaCircular, opcionesMenuListaCircular, nOpcionesMenuListaCircular);
+				switch (opcionMenuListaCircular) {
+				case 1:
+					do {
+						system("cls");
+						TituloInsertaProveedor();
+						gotoxy(35, 6); cout << "------------------------------------------------";
+						id = leerEntero("Ingrese el ID del proveedor: ", 35, 7);
+						nombre = leerCadena("Ingrese el nombre del proveedor: ", 35, 8);
+						direccion = leerCadena("Ingrese la direccion del proveedor: ", 35, 9);
+						telefono = leerCadena("Ingrese el telefono del proveedor: ", 35, 10);
+						correo = leerCadena("Ingrese el correo del proveedor: ", 35, 11);
+						productos = leerCadena("Ingrese los productos que ofrece el proveedor: ", 35, 12);
+						fechaRegistro = leerCadena("Ingrese la fecha de registro del proveedor (dd/mm/aa): ", 35, 13);
+						estado = leerCadena("Ingrese el estado del proveedor (Activo/Inactivo): ", 35, 14);
+						gotoxy(35, 15); cout << "------------------------------------------------";
+						InsertarProveedor(lista, id, nombre, direccion, telefono, correo, productos, fechaRegistro, estado);
+
+						// Preguntar si desea agregar otro proveedor
+						char respuesta = leerCaracter("Desea agregar otro proveedor? (S/N): ", "SN", 35, 19);
+						if (respuesta != 'S' && respuesta != 's') {
+							break;
+						}
+					} while (true);
+					// Mostrar la lista completa de proveedores
+					system("cls");
+					TituloVerProveedores();
+					MostrarProveedores(*lista);
+					break;
+				case 2:
+					do {
+						system("cls");
+						TituloBuscarProveedor();
+
+						if (*lista == nullptr) {
+							gotoxy(35, 6); cout << "La lista de proveedores esta vacia. No se puede realizar la busqueda." << endl;
+							break;
+						}
+
+						id = leerEntero("Ingrese el ID del proveedor a buscar: ", 35, 6);
+						BuscarProveedor(*lista, id);
+
+						// Preguntar si desea buscar otro proveedor
+						char respuesta = leerCaracter("Desea buscar otro proveedor? (S/N): ", "SN", 35, 22);
+						if (respuesta != 'S' && respuesta != 's') {
+							break;
+						}
+					} while (true);
+					gotoxy(35, 24); cout << "Presione una tecla para volver al menu de lista circular..." << endl;
+					_getch();
+					break;
+				case 3:
+					system("cls");
+					TituloModificarProveedor();
+					break;
+				case 4:
+					do {
+						system("cls");
+						TituloEliminarProveedor();
+
+						if (*lista == nullptr) {
+							gotoxy(30, 6); cout << "La lista de proveedores esta vacia. No se puede realizar la eliminacion." << endl;
+							break;
+						}
+
+						id = leerEntero("Ingrese el ID del proveedor a eliminar: ", 35, 6);
+						BorrarProveedor(lista, id);
+
+						// Preguntar si desea eliminar otro proveedor
+						system("cls");
+						TituloEliminarProveedor();
+						char respuesta = leerCaracter("Desea eliminar otro proveedor? (S/N): ", "SN", 35, 6);
+						if (respuesta != 'S' && respuesta != 's') {
+							break;
+						}
+					} while (true);
+					gotoxy(35, 21); cout << "Presione una tecla para volver al menu de lista circular..." << endl;
+					_getch();
+					break;
+				case 5:
+					system("cls");
+					TituloVerProveedores();
+					MostrarProveedores(*lista);
+					break;
+				case 6:
+					system("cls");
+					TituloVaciarListaProveedores();
+					VaciarListaProveedores(lista);
+					break;
+				case 7:
+					break;
+				case 8:
+					repite = false;
+					break;
+				}
+			} while (opcionMenuListaCircular != 7 && repite);
+			break;
+		case 6:
 			repite = false;
 			break;
 		}
 	} while (repite);
 }
-
 
 int MenuPrincipal(const char* tituloMenuPrincipal, const char* opcionesMenuPrincipal[], int nOpcionesMenuPrincipal) {
 	int opcionSeleccionada = 1; // Opción inicial
@@ -614,9 +948,9 @@ int MenuPrincipal(const char* tituloMenuPrincipal, const char* opcionesMenuPrinc
 
 	do {
 		system("cls");
-		gotoxy(30, 8); cout << "**********************************************************" << endl;
-		gotoxy(30, 9); cout << "***             " << tituloMenuPrincipal << "            ***" << endl;
-		gotoxy(30, 10); cout << "**********************************************************" << endl;
+		gotoxy(30, 8); cout << "*************************************************************************" << endl;
+		gotoxy(30, 9); cout << "***                     " << tituloMenuPrincipal << "                   ***" << endl;
+		gotoxy(30, 10); cout << "*************************************************************************" << endl;
 
 		for (int i = 0; i < nOpcionesMenuPrincipal; i++) {
 			gotoxy(33, 11 + i);
@@ -628,8 +962,8 @@ int MenuPrincipal(const char* tituloMenuPrincipal, const char* opcionesMenuPrinc
 			}
 		}
 
-		gotoxy(30, 15); cout << "**********************************************************" << endl;
-		gotoxy(18, 26); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+		gotoxy(30, 17); cout << "*************************************************************************" << endl;
+		gotoxy(18, 19); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
 
 		tecla = _getch(); // Captura la tecla presionada
 
@@ -671,8 +1005,8 @@ int MenuPila(const char* tituloMenuPila, const char* opcionesMenuPila[], int nOp
 			}
 		}
 
-		gotoxy(30, 18); cout << "**********************************************************" << endl;
-		gotoxy(18, 20); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+		gotoxy(30, 19); cout << "**********************************************************" << endl;
+		gotoxy(18, 21); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
 
 		tecla = _getch(); // Captura la tecla presionada
 
@@ -692,15 +1026,56 @@ int MenuPila(const char* tituloMenuPila, const char* opcionesMenuPila[], int nOp
 	return opcionSeleccionada;
 }
 
-int MenuLista(const char* tituloMenuLista, const char* opcionesMenuLista[], int nOpcionesMenuLista)
-{
+int MenuCola(const char* tituloMenuCola, const char* opcionesMenuCola[], int nOpcionesMenuCola) {
+	int opcionSeleccionada = 1; // Opción inicial
+	int tecla = 0;
+	bool repite = true;
+
+	do {
+		system("cls");
+		gotoxy(30, 8); cout << "**********************************************************" << endl;
+		gotoxy(30, 9); cout << "***       " << tituloMenuCola << "       ***" << endl;
+		gotoxy(30, 10); cout << "**********************************************************" << endl;
+
+		for (int i = 0; i < nOpcionesMenuCola; i++) {
+			gotoxy(33, 11 + i);
+			if (i + 1 == opcionSeleccionada) {
+				cout << " ==> " << opcionesMenuCola[i];
+			}
+			else {
+				cout << "     " << opcionesMenuCola[i];
+			}
+		}
+
+		gotoxy(30, 19); cout << "**********************************************************" << endl;
+		gotoxy(18, 21); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+
+		tecla = _getch(); // Captura la tecla presionada
+
+		switch (tecla) {
+		case 72: // Flecha arriba
+			if (opcionSeleccionada > 1) opcionSeleccionada--;
+			break;
+		case 80: // Flecha abajo
+			if (opcionSeleccionada < nOpcionesMenuCola) opcionSeleccionada++;
+			break;
+		case 13: // Enter
+			repite = false;
+			break;
+		}
+	} while (repite);
+
+	return opcionSeleccionada;
+}
+
+int MenuLista(const char* tituloMenuLista, const char* opcionesMenuLista[], int nOpcionesMenuLista) {
 	int opcionSeleccionada = 1; // Opción inicial
 	int tecla = 0;
 	bool repite = true;
 	do {
 		system("cls");
 		gotoxy(30, 8); cout << "**********************************************************" << endl;
-		gotoxy(30, 9); cout << "***          " << tituloMenuLista << "          ***" << endl;
+		gotoxy(30, 9); cout << "***             " << tituloMenuLista << "          ***" << endl;
 		gotoxy(30, 10); cout << "**********************************************************" << endl;
 		for (int i = 0; i < nOpcionesMenuLista; i++) {
 			gotoxy(33, 11 + i);
@@ -712,7 +1087,7 @@ int MenuLista(const char* tituloMenuLista, const char* opcionesMenuLista[], int 
 			}
 		}
 		gotoxy(30, 19); cout << "**********************************************************" << endl;
-		gotoxy(18, 20); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+		gotoxy(18, 21); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
 		tecla = _getch(); // Captura la tecla presionada
 		switch (tecla) {
 		case 72: // Flecha arriba
@@ -729,6 +1104,78 @@ int MenuLista(const char* tituloMenuLista, const char* opcionesMenuLista[], int 
 	return opcionSeleccionada;
 }
 
+int MenuListaDoble(const char* tituloMenuListaDoble, const char* opcionesMenuListaDoble[], int nOpcionesMenuListaDoble)
+{
+	int opcionSeleccionada = 1; // Opción inicial
+	int tecla = 0;
+	bool repite = true;
+	do {
+		system("cls");
+		gotoxy(23, 8); cout << "**************************************************************************" << endl;
+		gotoxy(23, 9); cout << "***          " << tituloMenuListaDoble << "          ***" << endl;
+		gotoxy(23, 10); cout << "**************************************************************************" << endl;
+		for (int i = 0; i < nOpcionesMenuListaDoble; i++) {
+			gotoxy(33, 11 + i);
+			if (i + 1 == opcionSeleccionada) {
+				cout << " ==> " << opcionesMenuListaDoble[i];
+			}
+			else {
+				cout << "     " << opcionesMenuListaDoble[i];
+			}
+		}
+		gotoxy(30, 19); cout << "**********************************************************" << endl;
+		gotoxy(18, 20); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+		tecla = _getch(); // Captura la tecla presionada
+		switch (tecla) {
+		case 72: // Flecha arriba
+			if (opcionSeleccionada > 1) opcionSeleccionada--;
+			break;
+		case 80: // Flecha abajo
+			if (opcionSeleccionada < nOpcionesMenuListaDoble) opcionSeleccionada++;
+			break;
+		case 13: // Enter
+			repite = false;
+			break;
+		}
+	} while (repite);
+	return opcionSeleccionada;
+}
+
+int MenuListaCircular(const char* tituloMenuListaCircular, const char* opcionesMenuListaCircular[], int nOpcionesMenuListaCircular) {
+	int opcionSeleccionada = 1; // Opción inicial
+	int tecla = 0;
+	bool repite = true;
+	do {
+		system("cls");
+		gotoxy(30, 8); cout << "**********************************************************" << endl;
+		gotoxy(30, 9); cout << "***        " << tituloMenuListaCircular << "      ***" << endl;
+		gotoxy(30, 10); cout << "**********************************************************" << endl;
+		for (int i = 0; i < nOpcionesMenuListaCircular; i++) {
+			gotoxy(33, 11 + i);
+			if (i + 1 == opcionSeleccionada) {
+				cout << " ==> " << opcionesMenuListaCircular[i];
+			}
+			else {
+				cout << "     " << opcionesMenuListaCircular[i];
+			}
+		}
+		gotoxy(30, 19); cout << "**********************************************************" << endl;
+		gotoxy(18, 21); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+		tecla = _getch(); // Captura la tecla presionada
+		switch (tecla) {
+		case 72: // Flecha arriba
+			if (opcionSeleccionada > 1) opcionSeleccionada--;
+			break;
+		case 80: // Flecha abajo
+			if (opcionSeleccionada < nOpcionesMenuListaCircular) opcionSeleccionada++;
+			break;
+		case 13: // Enter
+			repite = false;
+			break;
+		}
+	} while (repite);
+	return opcionSeleccionada;
+}
 
 // Funcion para agregar cerdos a la pila
 void agregarPila(Cerdo*& pila, int& arete, int& modulo, string& raza, char& sexo, float& peso, float& altura, string& nacimiento, int& edad, char& salud, string& ultVac, string& feUlVac, float& alimento, string& procede, char& venta, float& precio, string& destino) {
@@ -762,7 +1209,17 @@ void mostrarPila(Cerdo* pila) {
 		return;
 	}
 
-	Cerdo* aux = pila; // Puntero auxiliar para recorrer la pila
+	// Contar el número total de nodos en la pila
+	int totalNodos = 0;
+	Cerdo* aux = pila;
+	while (aux != nullptr) {
+		totalNodos++;
+		aux = aux->siguiente;
+	}
+
+	// Mostrar los nodos con la posición correcta
+	aux = pila;
+	int posicion = totalNodos;  // Comenzar desde el total de nodos
 
 	while (aux != nullptr) {
 		cout << endl;
@@ -775,9 +1232,22 @@ void mostrarPila(Cerdo* pila) {
 		cout << "\t\t\t\t\tAltura (cm): " << aux->altura << endl;
 		cout << "\t\t\t\t\tEdad (meses): " << aux->edad << endl;
 		cout << "\t\t\t\t\tSalud (E = Excelente/R = Regular/M = Mala): " << aux->estadoSalud << endl;
+		// Mostrar la posición del nodo, la dirección actual y la dirección del siguiente nodo al final de la ficha
+		if (posicion == totalNodos) {
+			cout << "\t\t\t\t\tPosicion del nodo: Ultimo" << endl;
+		}
+		else if (posicion == 1) {
+			cout << "\t\t\t\t\tPosicion del nodo: Primero" << endl;
+		}
+		else {
+			cout << "\t\t\t\t\tPosicion del nodo: " << posicion << endl;
+		}
+		cout << "\t\t\t\t\tDireccion actual: " << aux << endl;
+		cout << "\t\t\t\t\tDireccion siguiente: " << aux->siguiente << endl;
 		cout << "\t\t\t\t\t------------------------------------------------" << endl;
 
 		aux = aux->siguiente;  // Avanzamos al siguiente cerdo en la pila
+		posicion--;  // Decrementamos la posición del nodo
 	}
 
 	cout << endl;
@@ -789,31 +1259,46 @@ void buscarCerdo(Cerdo* pila, int areteBuscado, Cerdo*& cerdoEncontrado) {
 	cerdoEncontrado = nullptr; // Inicializar el puntero a nullptr
 
 	Cerdo* aux = pila; // Puntero auxiliar para recorrer la pila
+	int posicion = 1;  // Variable para llevar la cuenta de la posición del nodo
+
 	while (aux != nullptr) {
 		if (aux->numArete == areteBuscado) {
 			cerdoEncontrado = aux;
-			gotoxy(35, 8); cout << "------------------------------------------------";
-			gotoxy(40, 9); cout << "Ficha del cerdo con el arete " << aux->numArete;
-			gotoxy(35, 10); cout << "------------------------------------------------";
-			gotoxy(35, 11); cout << "Modulo: " << aux->numModulo;
-			gotoxy(35, 12); cout << "Raza: " << aux->raza;
-			gotoxy(35, 13); cout << "Sexo (M = macho/H = Hembra): " << aux->sexo;
-			gotoxy(35, 14); cout << "Peso (Kg): " << aux->peso;
-			gotoxy(35, 15); cout << "Altura (cm): " << aux->altura;
-			gotoxy(35, 16); cout << "Fecha de nacimiento(dd/mm/aa): " << aux->fechaNac;
-			gotoxy(35, 17); cout << "Edad (meses): " << aux->edad;
-			gotoxy(35, 18); cout << "Salud (E = Excelente/R = Regular/M = Mala): " << aux->estadoSalud;
-			gotoxy(35, 19); cout << "Ultima vacuna: " << aux->ultimaVacuna;
-			gotoxy(35, 20); cout << "Fecha de ultima vacunacion: " << aux->fechaUltimaVacuna;
-			gotoxy(35, 21); cout << "Alimento consumido: " << aux->cantAlimento;
-			gotoxy(35, 22); cout << "Procedencia: " << aux->procedencia;
-			gotoxy(35, 23); cout << "Venta: " << aux->venta;
-			gotoxy(35, 24); cout << "Destino: " << aux->destino;
-			gotoxy(35, 25); cout << "Direccion de memoria de este nodo: " << aux;
-			gotoxy(35, 26); cout << "------------------------------------------------";
+			gotoxy(35, 7); cout << "------------------------------------------------";
+			gotoxy(40, 8); cout << "Ficha del cerdo con el arete " << aux->numArete;
+			gotoxy(35, 9); cout << "------------------------------------------------";
+			gotoxy(35, 10); cout << "Modulo: " << aux->numModulo;
+			gotoxy(35, 11); cout << "Raza: " << aux->raza;
+			gotoxy(35, 12); cout << "Sexo (M = macho/H = Hembra): " << aux->sexo;
+			gotoxy(35, 13); cout << "Peso (Kg): " << aux->peso;
+			gotoxy(35, 14); cout << "Altura (cm): " << aux->altura;
+			gotoxy(35, 15); cout << "Fecha de nacimiento(dd/mm/aa): " << aux->fechaNac;
+			gotoxy(35, 16); cout << "Edad (meses): " << aux->edad;
+			gotoxy(35, 17); cout << "Salud (E = Excelente/R = Regular/M = Mala): " << aux->estadoSalud;
+			gotoxy(35, 18); cout << "Ultima vacuna: " << aux->ultimaVacuna;
+			gotoxy(35, 19); cout << "Fecha de ultima vacunacion: " << aux->fechaUltimaVacuna;
+			gotoxy(35, 20); cout << "Alimento consumido: " << aux->cantAlimento;
+			gotoxy(35, 21); cout << "Procedencia: " << aux->procedencia;
+			gotoxy(35, 22); cout << "Venta: " << aux->venta;
+			gotoxy(35, 23); cout << "Destino: " << aux->destino;
+
+			// Mostrar la posición del nodo, la dirección actual y la dirección del siguiente nodo al final de la ficha
+			if (aux == pila) {
+				gotoxy(35, 24); cout << "Posicion del nodo: Primero" << endl;
+			}
+			else if (aux->siguiente == nullptr) {
+				gotoxy(35, 24); cout << "Posicion del nodo: Ultimo" << endl;
+			}
+			else {
+				gotoxy(35, 24); cout << "Posicion del nodo: " << posicion << endl;
+			}
+			gotoxy(35, 25); cout << "Direccion actual: " << aux << endl;
+			gotoxy(35, 26); cout << "Direccion siguiente: " << aux->siguiente << endl;
+			gotoxy(35, 27); cout << "------------------------------------------------";
 			return;
 		}
 		aux = aux->siguiente;
+		posicion++;  // Incrementamos la posición del nodo
 	}
 
 	gotoxy(45, 9); cout << "No se encontro ningun cerdo con el arete " << areteBuscado << ".";
@@ -844,8 +1329,7 @@ void modificarCerdo(Cerdo* pila) {
 	}
 
 	// Preguntar si desea modificar el cerdo
-	gotoxy(40, 28); cout << "Desea modificar este cerdo? (S/N): ";
-	cin >> respuesta;
+	respuesta = leerCaracter("Desea modificar este cerdo? (S/N): ", "SN", 40, 28);
 	if (respuesta != 'S' && respuesta != 's') {
 		gotoxy(35, 30); cout << "Operación cancelada. Presione una tecla para volver al menu de pila de cerdos...";
 		_getch();
@@ -859,97 +1343,97 @@ void modificarCerdo(Cerdo* pila) {
 
 	// Modificar módulo
 	gotoxy(35, 8); cout << "Modificar modulo (Actual: " << cerdoEncontrado->numModulo << ")? (S/N): ";
-	cin >> respuesta;
+	respuesta = leerCaracter("", "SN", 73, 8);
 	if (respuesta == 'S' || respuesta == 's') {
 		gotoxy(35, 9); cout << "Nuevo modulo: ";
-		cin >> cerdoEncontrado->numModulo;
+		cerdoEncontrado->numModulo = leerEntero("", 49, 9);
 	}
 	borrarLinea(35, 8); borrarLinea(35, 9);
 
 	// Modificar raza
 	gotoxy(35, 8); cout << "Modificar raza (Actual: " << cerdoEncontrado->raza << ")? (S/N): ";
-	cin >> respuesta;
+	respuesta = leerCaracter("", "SN", 82, 8);
 	if (respuesta == 'S' || respuesta == 's') {
 		gotoxy(35, 9); cout << "Nueva raza: ";
-		cin >> cerdoEncontrado->raza;
+		cerdoEncontrado->raza = leerCadena("", 47, 9);
 	}
 	borrarLinea(35, 8); borrarLinea(35, 9);
 
 	// Modificar sexo
 	gotoxy(35, 8); cout << "Modificar sexo (Actual: " << cerdoEncontrado->sexo << ")? (S/N): ";
-	cin >> respuesta;
+	respuesta = leerCaracter("", "SN", 73, 8);
 	if (respuesta == 'S' || respuesta == 's') {
 		gotoxy(35, 9); cout << "Nuevo sexo (M = macho / H = Hembra): ";
-		cin >> cerdoEncontrado->sexo;
+		cerdoEncontrado->sexo = leerCaracter("", "MH", 73, 9);
 	}
 	borrarLinea(35, 8); borrarLinea(35, 9);
 
 	// Modificar peso
 	gotoxy(35, 8); cout << "Modificar peso (Actual: " << cerdoEncontrado->peso << " kg)? (S/N): ";
-	cin >> respuesta;
+	respuesta = leerCaracter("", "SN", 76, 8);
 	if (respuesta == 'S' || respuesta == 's') {
 		gotoxy(35, 9); cout << "Nuevo peso (kg): ";
-		cin >> cerdoEncontrado->peso;
+		cerdoEncontrado->peso = leerDecimal("", 52, 9);
 	}
 	borrarLinea(35, 8); borrarLinea(35, 9);
 
 	// Modificar altura
 	gotoxy(35, 8); cout << "Modificar altura (Actual: " << cerdoEncontrado->altura << " cm)? (S/N): ";
-	cin >> respuesta;
+	respuesta = leerCaracter("", "SN", 77, 8);
 	if (respuesta == 'S' || respuesta == 's') {
 		gotoxy(35, 9); cout << "Nueva altura (cm): ";
-		cin >> cerdoEncontrado->altura;
+		cerdoEncontrado->altura = leerDecimal("", 54, 9);
 	}
 	borrarLinea(35, 8); borrarLinea(35, 9);
 
 	// Modificar fecha de nacimiento
 	gotoxy(35, 8); cout << "Modificar fecha de nacimiento (Actual: " << cerdoEncontrado->fechaNac << ")? (S/N): ";
-	cin >> respuesta;
+	respuesta = leerCaracter("", "SN", 92, 8);
 	if (respuesta == 'S' || respuesta == 's') {
 		gotoxy(35, 9); cout << "Nueva fecha de nacimiento (dd/mm/aa): ";
-		cin >> cerdoEncontrado->fechaNac;
+		cerdoEncontrado->fechaNac = leerCadena("", 73, 9);
 	}
 	borrarLinea(35, 8); borrarLinea(35, 9);
 
 	// Modificar edad
 	gotoxy(35, 8); cout << "Modificar edad (Actual: " << cerdoEncontrado->edad << " meses)? (S/N): ";
-	cin >> respuesta;
+	respuesta = leerCaracter("", "SN", 78, 8);
 	if (respuesta == 'S' || respuesta == 's') {
 		gotoxy(35, 9); cout << "Nueva edad (meses): ";
-		cin >> cerdoEncontrado->edad;
+		cerdoEncontrado->edad = leerEntero("", 56, 9);
 	}
 	borrarLinea(35, 8); borrarLinea(35, 9);
 
 	// Modificar estado de salud
 	gotoxy(35, 8); cout << "Modificar salud (Actual: " << cerdoEncontrado->estadoSalud << ")? (S/N): ";
-	cin >> respuesta;
+	respuesta = leerCaracter("", "SN", 73, 8);
 	if (respuesta == 'S' || respuesta == 's') {
 		gotoxy(35, 9); cout << "Nuevo estado de salud (E = Excelente / R = Regular / M = Mala): ";
-		cin >> cerdoEncontrado->estadoSalud;
+		cerdoEncontrado->estadoSalud = leerCaracter("", "E/R/M", 101, 9);
 	}
 	borrarLinea(35, 8); borrarLinea(35, 9);
 
 	// Modificar última vacuna
 	gotoxy(35, 8); cout << "Modificar ultima vacuna (Actual: " << cerdoEncontrado->ultimaVacuna << ")? (S/N): ";
-	cin >> respuesta;
+	respuesta = leerCaracter("", "SN", 88, 8);
 	if (respuesta == 'S' || respuesta == 's') {
 		gotoxy(35, 9); cout << "Nueva ultima vacuna: ";
-		cin >> cerdoEncontrado->ultimaVacuna;
+		cerdoEncontrado->ultimaVacuna = leerCadena("", 57, 9);
 	}
 	borrarLinea(35, 8); borrarLinea(35, 9);
 
 	// Modificar fecha última vacunación
-	gotoxy(35, 8); cout << "Modificar fecha de última vacunacion (Actual: " << cerdoEncontrado->fechaUltimaVacuna << ")? (S/N): ";
-	cin >> respuesta;
+	gotoxy(35, 8); cout << "Modificar fecha de ultima vacunacion (Actual: " << cerdoEncontrado->fechaUltimaVacuna << ")? (S/N): ";
+	respuesta = leerCaracter("", "SN", 102, 8);
 	if (respuesta == 'S' || respuesta == 's') {
 		gotoxy(35, 9); cout << "Nueva fecha de ultima vacunacion (dd/mm/aa): ";
-		cin >> cerdoEncontrado->fechaUltimaVacuna;
+		cerdoEncontrado->fechaUltimaVacuna = leerCadena("", 81, 9);
 	}
 	borrarLinea(35, 8); borrarLinea(35, 9);
 
 	// Confirmar cambio y terminar
-	gotoxy(40, 11); cout << "Datos del cerdo modificados correctamente.";
-	gotoxy(40, 13); cout << "Presione una tecla para volver al menu de pila de cerdos...";
+	gotoxy(40, 12); cout << "Datos del cerdo modificados correctamente.";
+	gotoxy(40, 14); cout << "Presione una tecla para volver al menu de pila de cerdos...";
 	_getch();
 }
 
@@ -966,16 +1450,44 @@ void eliminarCerdosPila(Cerdo*& pila) {
 	do {
 		system("cls");
 		TituloEliminarCerdo();
-		mostrarPila(pila); // Mostrar la pila actualizada antes de eliminar
-		sacarPila(pila);
+
+		// Mostrar el cerdo que se va a eliminar
+		Cerdo* cerdoAEliminar = pila;
+		gotoxy(40, 6); cout << "Cerdo a eliminar:";
+		gotoxy(40, 8); cout << "Arete: " << cerdoAEliminar->numArete;
+		gotoxy(40, 9); cout << "Modulo: " << cerdoAEliminar->numModulo;
+		gotoxy(40, 10); cout << "Raza: " << cerdoAEliminar->raza;
+		gotoxy(40, 11); cout << "Sexo: " << cerdoAEliminar->sexo;
+		gotoxy(40, 12); cout << "Peso: " << cerdoAEliminar->peso << " Kg";
+		gotoxy(40, 13); cout << "Altura: " << cerdoAEliminar->altura << " cm";
+		gotoxy(40, 14); cout << "Edad: " << cerdoAEliminar->edad << " meses";
+		gotoxy(40, 15); cout << "Salud: " << cerdoAEliminar->estadoSalud;
+		gotoxy(40, 16); cout << "Ultima vacuna: " << cerdoAEliminar->ultimaVacuna;
+		gotoxy(40, 17); cout << "Fecha ultima vacunacion: " << cerdoAEliminar->fechaUltimaVacuna;
+		gotoxy(40, 18); cout << "Alimento consumido: " << cerdoAEliminar->cantAlimento << " kg";
+		gotoxy(40, 19); cout << "Procedencia: " << cerdoAEliminar->procedencia;
+		gotoxy(40, 20); cout << "Venta: " << cerdoAEliminar->venta;
+		gotoxy(40, 21); cout << "Destino: " << cerdoAEliminar->destino;
+
+		// Preguntar si desea eliminar el cerdo
+		respuesta = leerCaracter("Desea eliminar este cerdo? (S/N):", "SN", 40, 23);
+
+		if (respuesta == 'S' || respuesta == 's') {
+			sacarPila(pila); // Eliminar el cerdo de la pila
+			gotoxy(40, 25); cout << "Cerdo eliminado con exito.";
+		}
+		else {
+			gotoxy(40, 25); cout << "Operacion cancelada. Presione una tecla para volver al menu de pila de cerdos...";
+			_getch();
+			return;
+		}
 
 		if (pila == nullptr) {
 			gotoxy(40, 27); cout << "No hay más cerdos en la pila.";
 			break;
 		}
 
-		gotoxy(40, 27); cout << "¿Desea eliminar otro cerdo? (S/N): ";
-		cin >> respuesta;
+		respuesta = leerCaracter("Desea eliminar otro cerdo? (S/N): ", "SN", 40, 27);
 
 	} while ((respuesta == 'S' || respuesta == 's') && pila != nullptr);
 
@@ -985,84 +1497,53 @@ void eliminarCerdosPila(Cerdo*& pila) {
 
 void sacarPila(Cerdo*& pila) {
 	if (pila == nullptr) {
-		gotoxy(40, 6); cout << "La pila esta vacia. No hay cerdos para eliminar.";
-		gotoxy(40, 8); cout << "Presione una tecla para volver al menú de pila de cerdos...";
-		_getch();
 		return;
 	}
 
 	// Guardar referencia al cerdo que se eliminará
 	Cerdo* aux = pila;
 
-	// Mostrar información del cerdo que será eliminado
-	gotoxy(48, 6); cout << "Se elimino el siguiente cerdo:";
-	gotoxy(40, 8); cout << "-----------------------------------------";
-	gotoxy(40, 9); cout << "Arete: " << aux->numArete;
-	gotoxy(40, 10); cout << "Modulo: " << aux->numModulo;
-	gotoxy(40, 11); cout << "Raza: " << aux->raza;
-	gotoxy(40, 12); cout << "Sexo: " << aux->sexo;
-	gotoxy(40, 13); cout << "Peso: " << aux->peso << " Kg";
-	gotoxy(40, 14); cout << "Altura: " << aux->altura << " cm";
-	gotoxy(40, 15); cout << "Edad: " << aux->edad << " meses";
-	gotoxy(40, 16); cout << "Salud: " << aux->estadoSalud;
-	gotoxy(40, 17); cout << "Ultima vacuna: " << aux->ultimaVacuna;
-	gotoxy(40, 18); cout << "Fecha ultima vacunacion: " << aux->fechaUltimaVacuna;
-	gotoxy(40, 19); cout << "Alimento consumido: " << aux->cantAlimento << " kg";
-	gotoxy(40, 20); cout << "Procedencia: " << aux->procedencia;
-	gotoxy(40, 21); cout << "Venta: " << aux->venta;
-	gotoxy(40, 22); cout << "Destino: " << aux->destino;
-	gotoxy(40, 23); cout << "-----------------------------------------";
-
 	// Mover la cima de la pila al siguiente nodo
 	pila = aux->siguiente;
 
 	// Liberar memoria del nodo eliminado
 	delete aux;
-
-	gotoxy(30, 25); cout << "Operacion finalizada. Presione una tecla para continuar...";
-	_getch();
 }
 
-int MenuCola(const char* tituloMenuCola, const char* opcionesMenuCola[], int nOpcionesMenuCola) {
-	int opcionSeleccionada = 1; // Opción inicial
-	int tecla = 0;
-	bool repite = true;
+void vaciarPila(Cerdo*& pila) {
+	if (pila == nullptr) {
+		gotoxy(50, 6); cout << "La pila ya esta vacia.";
+		gotoxy(40, 8); cout << "Presione una tecla para volver al menu de pila de cerdos...";
+		_getch();
+		return;
+	}
 
-	do {
-		system("cls");
-		gotoxy(30, 8); cout << "**********************************************************" << endl;
-		gotoxy(30, 9); cout << "***       " << tituloMenuCola << "       ***" << endl;
-		gotoxy(30, 10); cout << "**********************************************************" << endl;
+	// Mostrar la pila completa
+	system("cls");
+	TituloVerCerdos();
+	mostrarPila(pila);
 
-		for (int i = 0; i < nOpcionesMenuCola; i++) {
-			gotoxy(33, 11 + i);
-			if (i + 1 == opcionSeleccionada) {
-				cout << " ==> " << opcionesMenuCola[i];
-			}
-			else {
-				cout << "     " << opcionesMenuCola[i];
-			}
-		}
+	// Preguntar si desea vaciar la pila
+	char respuesta;
+	gotoxy(40, 6); cout << "¿Desea vaciar la pila de cerdos? (S/N): ";
+	respuesta = leerCaracter("", "SN", 40, 7);
 
-		gotoxy(30, 18); cout << "**********************************************************" << endl;
-		gotoxy(18, 20); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+	if (respuesta != 'S' && respuesta != 's') {
+		gotoxy(40, 9); cout << "Operación cancelada. Presione una tecla para volver al menú de pila de cerdos...";
+		_getch();
+		return;
+	}
 
-		tecla = _getch(); // Captura la tecla presionada
+	// Vaciar la pila
+	while (pila != nullptr) {
+		Cerdo* aux = pila; // Guardar referencia al nodo actual
+		pila = pila->siguiente; // Mover la cima de la pila al siguiente nodo
+		delete aux; // Liberar memoria del nodo eliminado
+	}
 
-		switch (tecla) {
-		case 72: // Flecha arriba
-			if (opcionSeleccionada > 1) opcionSeleccionada--;
-			break;
-		case 80: // Flecha abajo
-			if (opcionSeleccionada < nOpcionesMenuCola) opcionSeleccionada++;
-			break;
-		case 13: // Enter
-			repite = false;
-			break;
-		}
-	} while (repite);
-
-	return opcionSeleccionada;
+	gotoxy(40, 9); cout << "La pila de cerdos ha sido vaciada correctamente.";
+	gotoxy(40, 11); cout << "Presione una tecla para volver al menú de pila de cerdos...";
+	_getch();
 }
 
 // Funcion para crear trabajadores a la cola de empleados
@@ -1097,7 +1578,6 @@ void encolarEmpleado(ColaEmpleado& q, Empleado* nuevo) {
 	q.atras = nuevo;
 }
 
-// Funcion para gestionar el ingreso de empleados a la cola de empleados (Si se ingresan mas o ya no)
 void gestionarIngresoEmpleados(ColaEmpleado& q) {
 	char rpt;
 	do {
@@ -1105,8 +1585,7 @@ void gestionarIngresoEmpleados(ColaEmpleado& q) {
 		encolarEmpleado(q, nuevo);
 		gotoxy(35, 22); cout << "Empleado ingresado correctamente a la cola de empleados.";
 		gotoxy(45, 24); cout << "Desea ingresar otro empleado? (S/N): ";
-		cin >> rpt;
-		cin.ignore(); // Limpiar buffer después de leer un carácter
+		rpt = leerCaracter("", "SN", 82, 24);
 	} while (rpt == 's' || rpt == 'S');
 	gotoxy(40, 26); cout << "Presione una tecla para ver la cola actualizada...";
 	_getch();
@@ -1188,8 +1667,7 @@ void gestionarBusquedaEmpleados(ColaEmpleado q) {
 	do {
 		system("cls");
 		TituloBuscarTrabajador();
-		gotoxy(45, 7); cout << "Ingrese el ID del trabajador a buscar: ";
-		cin >> idEmpleadoBuscado;
+		idEmpleadoBuscado = leerEntero("Ingrese el ID del trabajador a buscar: ", 45, 7);
 
 		empleadoEncontrado = buscarEmpleado(q, idEmpleadoBuscado);
 
@@ -1218,8 +1696,7 @@ void gestionarBusquedaEmpleados(ColaEmpleado q) {
 		}
 
 		gotoxy(45, filaFinal + 2); cout << "Desea buscar otro empleado? (S/N): ";
-		cin >> rpt;
-		cin.ignore(); // Limpiar buffer después de leer un carácter
+		rpt = leerCaracter("", "SN", 45, filaFinal + 2);
 
 	} while (rpt == 'S' || rpt == 's');
 
@@ -1266,7 +1743,8 @@ void eliminarEmpleado(ColaEmpleado& q) {
 
 		// Preguntar si desea eliminar el empleado
 		gotoxy(40, 22); cout << "Desea eliminar este empleado? (S/N): ";
-		cin >> respuesta;
+		respuesta = leerCaracter("", "SN", 40, 22);
+
 		if (respuesta == 'S' || respuesta == 's') {
 			// Eliminar el primer empleado de la cola
 			q.delante = q.delante->sgte;
@@ -1290,7 +1768,7 @@ void eliminarEmpleado(ColaEmpleado& q) {
 		}
 
 		gotoxy(45, 26); cout << "¿Desea eliminar otro empleado? (S/N): ";
-		cin >> respuesta;
+		respuesta = leerCaracter("", "SN", 45, 26);
 
 	} while ((respuesta == 'S' || respuesta == 's') && q.delante != nullptr);
 
@@ -1493,32 +1971,58 @@ void modificarEmpleado(ColaEmpleado& q) {
 	_getch();
 }
 
-Comprador* CrearComprador() 
-{
+void vaciarCola(ColaEmpleado& q) {
+	if (q.delante == nullptr) {
+		gotoxy(40, 6); cout << "La cola ya está vacía.";
+		gotoxy(40, 8); cout << "Presione una tecla para volver al menú de cola de empleados...";
+		_getch();
+		return;
+	}
+
+	// Mostrar la cola completa
+	system("cls");
+	TituloVerTrabajadores();
+	mostrarColaEmpleados(q);
+
+	// Preguntar si desea vaciar la cola
+	char respuesta;
+	gotoxy(40, 6); cout << "¿Desea vaciar la cola de empleados? (S/N): ";
+	respuesta = leerCaracter("", "SN", 40, 11);
+
+	if (respuesta != 'S' && respuesta != 's') {
+		gotoxy(40, 11); cout << "Operación cancelada. Presione una tecla para volver al menú de cola de empleados...";
+		_getch();
+		return;
+	}
+
+	// Vaciar la cola
+	while (q.delante != nullptr) {
+		Empleado* aux = q.delante; // Guardar referencia al nodo actual
+		q.delante = q.delante->sgte; // Mover el frente de la cola al siguiente nodo
+		delete aux; // Liberar memoria del nodo eliminado
+	}
+
+	q.atras = nullptr; // Asegurarse de que el puntero 'atras' también esté en nullptr
+
+	gotoxy(40, 13); cout << "La cola de empleados ha sido vaciada correctamente.";
+	gotoxy(40, 14); cout << "Presione una tecla para volver al menú de cola de empleados...";
+	_getch();
+}
+
+Comprador* CrearComprador() {
 	Comprador* nuevo = new Comprador;
 
-	// Validación para el ID
-	do {
-		gotoxy(45, 7); cout << "Ingrese ID del comprador: ";
-		cin >> nuevo->id;
-		if (nuevo->id <= 0) {
-			gotoxy(45, 8); cout << "El ID debe ser un entero positivo.";
-			_getch();
-			borrarLinea(45, 8);
-		}
-	} while (nuevo->id <= 0);
+	nuevo->id = leerEntero("Ingrese ID del comprador: ", 45, 7);
 
-	cin.ignore();
-	// Limpiar buffer después de leer un entero
 	gotoxy(35, 8); cout << "-----------------------------------------------------";
-	gotoxy(45, 9); cout << "Ingrese nombre: "; getline(cin, nuevo->nombre);
-	gotoxy(45, 10); cout << "Ingrese telefono: "; getline(cin, nuevo->telefono);
-	gotoxy(45, 11); cout << "Ingrese direccion: "; getline(cin, nuevo->direccion);
-	gotoxy(45, 12); cout << "Ingrese metodo de pago: "; getline(cin, nuevo->metodoPago);
-	gotoxy(45, 13); cout << "Ingrese frecuencia de compra: "; getline(cin, nuevo->frecuenciaCompra);
-	gotoxy(45, 14); cout << "Ingrese preferencias: "; getline(cin, nuevo->preferencias);
-	gotoxy(45, 15); cout << "Ingrese fecha de registro: "; getline(cin, nuevo->fechaRegistro);
-	gotoxy(45, 16); cout << "Ingrese estado de cuenta: "; getline(cin, nuevo->estadoCuenta);
+	nuevo->nombre = leerCadena("Ingrese nombre: ", 45, 9);
+	nuevo->telefono = leerCadena("Ingrese telefono: ", 45, 10);
+	nuevo->direccion = leerCadena("Ingrese direccion: ", 45, 11);
+	nuevo->metodoPago = leerCadena("Ingrese metodo de pago: ", 45, 12);
+	nuevo->frecuenciaCompra = leerCadena("Ingrese frecuencia de compra: ", 45, 13);
+	nuevo->preferencias = leerCadena("Ingrese preferencias: ", 45, 14);
+	nuevo->fechaRegistro = leerCadena("Ingrese fecha de registro: ", 45, 15);
+	nuevo->estadoCuenta = leerCadena("Ingrese estado de cuenta: ", 45, 16);
 	gotoxy(35, 17); cout << "-----------------------------------------------------";
 	nuevo->sgte = nullptr;
 	return nuevo;
@@ -1548,11 +2052,10 @@ void gestionarIngresoCompradores(Comprador*& compradores) {
 		Comprador* nuevo = CrearComprador();
 		insertarComprador(compradores, nuevo);
 		gotoxy(35, 22); cout << "Comprador ingresado correctamente a la lista de compradores.";
-		gotoxy(45, 24); cout << "Desea ingresar otro comprador? (s/n): ";
-		cin >> rpt;
-		cin.ignore(); // Limpiar buffer después de leer un carácter
+		gotoxy(45, 24); cout << "Desea ingresar otro comprador? (S/N): ";
+		rpt = leerCaracter("", "SN", 45, 24);
 	} while (rpt == 's' || rpt == 'S');
-	gotoxy(45, 26); cout << "Presione una tecla para volver al menu de listas...";
+	gotoxy(40, 26); cout << "Presione una tecla para ver la lista actualizada...";
 	_getch();
 }
 
@@ -1562,7 +2065,6 @@ void mostrarListaCompradores(Comprador* compradores)
 	aux = compradores;
 	while (aux != nullptr)
 	{
-		cout << "Presione alguna tecla";
 		cout << endl;
 		cout << "\t\t\t\t\t------------------------------------------------" << endl;
 		cout << "\t\t\t\t\t\tDatos de Comprador " << aux->id << endl;
@@ -1577,16 +2079,23 @@ void mostrarListaCompradores(Comprador* compradores)
 
 		aux = aux->sgte;
 	}
-	
+
 }
 
 Comprador* buscarComprador(Comprador* compradores, int idCompradorBuscado) {
 	Comprador* aux = compradores;
-	while (aux) 
-	{
-		
-		if (aux->id == idCompradorBuscado)
-		{
+
+	// Si la lista está vacía
+	if (aux == nullptr) {
+		gotoxy(45, 8); cout << "La lista de compradores está vacía.";
+		_getch();
+		return nullptr;
+	}
+
+	// Buscar el comprador por ID
+	while (aux) {
+		if (aux->id == idCompradorBuscado) {
+			// Mostrar la información del comprador encontrado
 			gotoxy(35, 9); cout << "-----------------------------------------------------";
 			gotoxy(45, 10); cout << "Nombre: " << aux->nombre;
 			gotoxy(45, 11); cout << "Telefono: " << aux->telefono;
@@ -1599,156 +2108,160 @@ Comprador* buscarComprador(Comprador* compradores, int idCompradorBuscado) {
 			gotoxy(35, 18); cout << "-----------------------------------------------------";
 			gotoxy(45, 19); cout << "Comprador encontrado.";
 			gotoxy(45, 20); cout << "Presione una tecla para continuar...";
+			_getch();
+			return aux; // Devolver el comprador encontrado
 		}
 		aux = aux->sgte;
 	}
+
+	// Si llegó aquí, no se encontró el comprador
 	gotoxy(45, 8); cout << "Comprador con el id " << idCompradorBuscado << " no encontrado.";
 	_getch();
-	
 	return nullptr;
 }
 
-void modificarComprador(Comprador*& compradores) 
-{
+void modificarComprador(Comprador*& compradores) {
 	int idCompradorBuscado = 0;
 	Comprador* compradorEncontrado = nullptr;
 	char respuesta;
-	if (compradores == nullptr) 
-	{
-		gotoxy(40, 8); cout << "La lista de compradores esta vaccia";
+	if (compradores == nullptr) {
+		gotoxy(40, 8); cout << "La lista de compradores esta vacia";
 		gotoxy(40, 9); cout << "Presione una tecla para volver al menu de listas...";
 		_getch();
 		return;
 	}
 
-	do 
-	{
+	do {
 		gotoxy(45, 7); cout << "Ingrese el ID del comprador a modificar: ";
-		cin >> idCompradorBuscado;
+		idCompradorBuscado = leerEntero("", 45, 7);
 		compradorEncontrado = buscarComprador(compradores, idCompradorBuscado);
+		if (compradorEncontrado == nullptr) {
+			gotoxy(40, 10); cout << "Comprador no encontrado. ¿Desea intentar con otro ID? (S/N): ";
+			respuesta = leerCaracter("", "SN", 78, 10);
+			if (respuesta != 'S' && respuesta != 's') {
+				gotoxy(35, 12); cout << "Operacion cancelada. Presione una tecla para volver al menu de compradores...";
+				_getch();
+				return;
+			}
+			continue;
+		}
+
 		gotoxy(40, 10); cout << "Desea modificar este comprador? (S/N): ";
 		respuesta = leerCaracter("", "SN", 78, 10);
-		if (respuesta != 'S' && respuesta != 's') 
-		{
+		if (respuesta != 'S' && respuesta != 's') {
 			gotoxy(35, 12); cout << "Operacion cancelada. Presione una tecla para volver al menu de compradores...";
 			_getch();
 			return;
 		}
+
 		// Modificar nombre
-		do 
-		{
+		do {
 			system("cls");
 			TituloModificarComprador();
 			gotoxy(35, 7); cout << "Modificar nombre (Actual: " << compradorEncontrado->nombre << ")? (S/N): ";
 			respuesta = leerCaracter("", "SN", 35, 8);
-			if (respuesta == 'S' || respuesta == 's')
-			{
+			if (respuesta == 'S' || respuesta == 's') {
 				compradorEncontrado->nombre = leerCadena("Nuevo nombre: ", 35, 9);
 			}
 			borrarLinea(35, 7); borrarLinea(35, 8); borrarLinea(35, 9);
 		} while (respuesta == 'S' || respuesta == 's');
+
 		// Modificar telefono
-		do
-		{
+		do {
 			system("cls");
 			TituloModificarComprador();
 			gotoxy(35, 7); cout << "Modificar telefono (Actual: " << compradorEncontrado->telefono << ")? (S/N): ";
 			respuesta = leerCaracter("", "SN", 35, 8);
-			if (respuesta == 'S' || respuesta == 's') 
-			{
+			if (respuesta == 'S' || respuesta == 's') {
 				compradorEncontrado->telefono = leerCadena("Nuevo telefono: ", 35, 9);
 			}
 			borrarLinea(35, 7); borrarLinea(35, 8); borrarLinea(35, 9);
 		} while (respuesta == 'S' || respuesta == 's');
+
 		// Modificar direccion
-		do 
-		{
+		do {
 			system("cls");
 			TituloModificarComprador();
 			gotoxy(35, 7); cout << "Modificar direccion (Actual: " << compradorEncontrado->direccion << ")? (S/N): ";
 			respuesta = leerCaracter("", "SN", 35, 8);
-			if (respuesta == 'S' || respuesta == 's') 
-			{
+			if (respuesta == 'S' || respuesta == 's') {
 				compradorEncontrado->direccion = leerCadena("Nueva direccion: ", 35, 9);
 			}
 			borrarLinea(35, 7); borrarLinea(35, 8); borrarLinea(35, 9);
 		} while (respuesta == 'S' || respuesta == 's');
+
 		// Modificar metodo de pago
-		do 
-		{
+		do {
 			system("cls");
 			TituloModificarComprador();
 			gotoxy(35, 7); cout << "Modificar metodo de pago (Actual: " << compradorEncontrado->metodoPago << ")? (S/N): ";
 			respuesta = leerCaracter("", "SN", 35, 8);
-			if (respuesta == 'S' || respuesta == 's') 
-			{
+			if (respuesta == 'S' || respuesta == 's') {
 				compradorEncontrado->metodoPago = leerCadena("Nuevo metodo de pago: ", 35, 9);
 			}
 			borrarLinea(35, 7); borrarLinea(35, 8); borrarLinea(35, 9);
 		} while (respuesta == 'S' || respuesta == 's');
+
 		// Modificar frecuencia de compra
-		do 
-		{
+		do {
 			system("cls");
 			TituloModificarComprador();
 			gotoxy(35, 7); cout << "Modificar frecuencia de compra (Actual: " << compradorEncontrado->frecuenciaCompra << ")? (S/N): ";
 			respuesta = leerCaracter("", "SN", 35, 8);
-			if (respuesta == 'S' || respuesta == 's') 
-			{
+			if (respuesta == 'S' || respuesta == 's') {
 				compradorEncontrado->frecuenciaCompra = leerCadena("Nueva frecuencia de compra: ", 35, 9);
 			}
 			borrarLinea(35, 7); borrarLinea(35, 8); borrarLinea(35, 9);
 		} while (respuesta == 'S' || respuesta == 's');
+
 		// Modificar preferencias
-		do 
-		{
+		do {
 			system("cls");
 			TituloModificarComprador();
 			gotoxy(35, 7); cout << "Modificar preferencias (Actual: " << compradorEncontrado->preferencias << ")? (S/N): ";
 			respuesta = leerCaracter("", "SN", 35, 8);
-			if (respuesta == 'S' || respuesta == 's') 
-			{
+			if (respuesta == 'S' || respuesta == 's') {
 				compradorEncontrado->preferencias = leerCadena("Nuevas preferencias: ", 35, 9);
 			}
 			borrarLinea(35, 7); borrarLinea(35, 8); borrarLinea(35, 9);
 		} while (respuesta == 'S' || respuesta == 's');
+
 		// Modificar fecha de registro
-		do
-		{
+		do {
 			system("cls");
 			TituloModificarComprador();
 			gotoxy(35, 7); cout << "Modificar fecha de registro (Actual: " << compradorEncontrado->fechaRegistro << ")? (S/N): ";
 			respuesta = leerCaracter("", "SN", 35, 8);
-			if (respuesta == 'S' || respuesta == 's') 
-			{
+			if (respuesta == 'S' || respuesta == 's') {
 				compradorEncontrado->fechaRegistro = leerCadena("Nueva fecha de registro: ", 35, 9);
 			}
 			borrarLinea(35, 7); borrarLinea(35, 8); borrarLinea(35, 9);
 		} while (respuesta == 'S' || respuesta == 's');
+
 		// Modificar estado de cuenta
-		do 
-		{
+		do {
 			system("cls");
 			TituloModificarComprador();
 			gotoxy(35, 7); cout << "Modificar estado de cuenta (Actual: " << compradorEncontrado->estadoCuenta << ")? (S/N): ";
 			respuesta = leerCaracter("", "SN", 35, 8);
-			if (respuesta == 'S' || respuesta == 's')
-			{
+			if (respuesta == 'S' || respuesta == 's') {
 				compradorEncontrado->estadoCuenta = leerCadena("Nuevo estado de cuenta: ", 35, 9);
 			}
 			borrarLinea(35, 7); borrarLinea(35, 8); borrarLinea(35, 9);
 		} while (respuesta == 'S' || respuesta == 's');
+
 		gotoxy(40, 6); cout << "Datos del comprador modificados correctamente.";
 		gotoxy(45, 8); cout << "Desea modificar otro comprador? (S/N): ";
 		respuesta = leerCaracter("", "SN", 78, 10);
 	} while (respuesta == 'S' || respuesta == 's');
-		gotoxy(40, 12); cout << "Presione una tecla para volver al menu de compradores...";
-		_getch();
+	gotoxy(40, 12); cout << "Presione una tecla para volver al menu de compradores...";
+	_getch();
 }
+
 void sacarComprador(Comprador*& compradores, int idCompradorBuscado)
 {
 	Comprador* aux1 = compradores, * aux2 = nullptr;
-	while (aux1 != nullptr && aux1->id != idCompradorBuscado) 
+	while (aux1 != nullptr && aux1->id != idCompradorBuscado)
 	{
 		aux2 = aux1;
 		aux1 = aux1->sgte;
@@ -1763,7 +2276,7 @@ void sacarComprador(Comprador*& compradores, int idCompradorBuscado)
 		compradores = compradores->sgte;
 		delete aux1;
 	}
-	else 
+	else
 	{
 		aux2->sgte = aux1->sgte;
 		delete aux1;
@@ -1772,6 +2285,7 @@ void sacarComprador(Comprador*& compradores, int idCompradorBuscado)
 	gotoxy(40, 8); cout << "Presione una tecla para volver al menu de compradores...";
 	_getch();
 }
+
 void eliminarCompradores(Comprador*& compradores, int idCompradorBuscado)
 {
 	Comprador* aux = compradores;
@@ -1789,6 +2303,602 @@ void eliminarCompradores(Comprador*& compradores, int idCompradorBuscado)
 	compradores = nullptr;
 	gotoxy(40, 6); cout << "Compradores eliminados correctamente.";
 	gotoxy(40, 8); cout << "Presione una tecla para volver al menú de compradores...";
+	_getch();
+}
+void agregarAlimento(Alimento*& cabeza, Alimento*& cola, int codigo, string marca, string fechaCaducacion,
+	int cantidad, string categoria, string proveedor, float precio, string paisOrigen) {
+	Alimento* nuevo = new Alimento();
+	nuevo->codigo = codigo;
+	nuevo->marca = marca;
+	nuevo->fechaCaducacion = fechaCaducacion;
+	nuevo->cantidad = cantidad;
+	nuevo->categoria = categoria;
+	nuevo->proveedor = proveedor;
+	nuevo->precio = precio;
+	nuevo->paisOrigen = paisOrigen;
+	nuevo->anterior = nullptr;
+	nuevo->siguiente = nullptr;
+
+	// Caso 1: Lista vacía
+	if (cabeza == nullptr) {
+		cabeza = cola = nuevo;
+		gotoxy(40, 19); cout << "Alimento agregado correctamente (PRIMER elemento).";
+		gotoxy(40, 20); cout << "Direccion: " << nuevo;
+		gotoxy(40, 21); cout << "Anterior: NULL";
+		gotoxy(40, 22); cout << "Siguiente: NULL";
+		return;
+	}
+
+	// Caso 2: Insertar al inicio
+	if (codigo < cabeza->codigo) {
+		nuevo->siguiente = cabeza;
+		cabeza->anterior = nuevo;
+		cabeza = nuevo;
+
+		// Determinar posición
+		int posicion = 1;
+		gotoxy(40, 19); cout << "Alimento agregado correctamente (PRIMER elemento).";
+		gotoxy(40, 20); cout << "Direccion: " << nuevo;
+		gotoxy(40, 21); cout << "Anterior: NULL";
+		gotoxy(40, 22); cout << "Siguiente: " << nuevo->siguiente;
+		gotoxy(40, 23); cout << "Ahora hay " << contarElementos(cabeza) << " elementos en la lista.";
+		return;
+	}
+
+	// Caso 3: Insertar al final
+	if (codigo > cola->codigo) {
+		cola->siguiente = nuevo;
+		nuevo->anterior = cola;
+		cola = nuevo;
+
+		// Determinar posición
+		int total = contarElementos(cabeza);
+		gotoxy(40, 19); cout << "Alimento agregado correctamente (ULTIMO elemento, posicion " << total << ").";
+		gotoxy(40, 20); cout << "Direccion: " << nuevo;
+		gotoxy(40, 21); cout << "Anterior: " << nuevo->anterior;
+		gotoxy(40, 22); cout << "Siguiente: NULL";
+		gotoxy(40, 23); cout << "Ahora hay " << total << " elementos en la lista.";
+		return;
+	}
+
+	// Caso 4: Insertar en medio
+	Alimento* actual = cabeza;
+	int posicion = 1;
+	while (actual != nullptr && actual->codigo < codigo) {
+		actual = actual->siguiente;
+		posicion++;
+	}
+
+	// Verificar si el código ya existe
+	if (actual != nullptr && actual->codigo == codigo) {
+		gotoxy(40, 19); cout << "Error: Ya existe un alimento con ese codigo.";
+		delete nuevo;
+		return;
+	}
+
+	// Insertar antes del nodo actual
+	nuevo->siguiente = actual;
+	nuevo->anterior = actual->anterior;
+	actual->anterior->siguiente = nuevo;
+	actual->anterior = nuevo;
+
+	// Mostrar información de posición
+	gotoxy(40, 19); cout << "Alimento agregado correctamente (Posicion " << posicion << ").";
+	gotoxy(40, 20); cout << "Direccion: " << nuevo;
+	gotoxy(40, 21); cout << "Anterior: " << nuevo->anterior;
+	gotoxy(40, 22); cout << "Siguiente: " << nuevo->siguiente;
+	gotoxy(40, 23); cout << "Ahora hay " << contarElementos(cabeza) << " elementos en la lista.";
+}
+
+// Función auxiliar para contar elementos en la lista (añadir esta función)
+int contarElementos(Alimento* cabeza) {
+	int contador = 0;
+	Alimento* actual = cabeza;
+	while (actual != nullptr) {
+		contador++;
+		actual = actual->siguiente;
+	}
+	return contador;
+}
+//Funciones para el uso de lista doble
+// Función para mostrar todos los alimentos en la lista
+void mostrarListaAlimentos(Alimento* cabeza) {
+	if (cabeza == nullptr) {
+		gotoxy(38, 7); cout << "La lista esta vacia. No hay alimentos registrados.";
+		gotoxy(38, 9); cout << "Presione una tecla para volver al menu de alimentos...";
+		_getch();
+		return;
+	}
+
+	system("cls"); // Limpiar pantalla antes de mostrar
+	TituloVerAlimento();
+
+	Alimento* actual = cabeza;
+	int fila = 8; // Empezar más abajo para dejar espacio al título
+
+	// Mostrar información de los nodos extremos
+	gotoxy(5, fila++); cout << "=== INFORMACION DE LA LISTA ===";
+	gotoxy(5, fila++); cout << "Primer nodo: " << cabeza->codigo << " (" << cabeza << ")";
+
+	// Encontrar el último nodo
+	Alimento* ultimo = cabeza;
+	while (ultimo->siguiente != nullptr) {
+		ultimo = ultimo->siguiente;
+	}
+	gotoxy(5, fila++); cout << "Ultimo nodo: " << ultimo->codigo << " (" << ultimo << ")";
+	fila++; // Espacio
+
+	// Encabezados de columnas
+	gotoxy(5, fila++); cout << "Pos." << "\tCodigo" << "\tMarca" << "\tCaducidad" << "\tCant." << "\tPrecio" << "\tDireccion";
+	gotoxy(5, fila++); cout << "------------------------------------------------------------------------------------------------";
+
+	int posicion = 1;
+	while (actual != nullptr) {
+		// Limitar la longitud de los strings para que no desborden
+		string marcaCorta = actual->marca.substr(0, 10);
+		if (actual->marca.length() > 10) marcaCorta += "...";
+
+		string fechaCorta = actual->fechaCaducacion.substr(0, 10);
+
+		// Mostrar datos en formato compacto
+		gotoxy(5, fila++);
+		cout << posicion++ << "\t        "
+			<< actual->codigo << "\t"
+			<< marcaCorta << "\t "
+			<< fechaCorta << "\t        "
+			<< actual->cantidad << "\t "
+			<< actual->precio << "\t"
+			<< actual;
+
+		// Mostrar relaciones de nodos en líneas separadas
+		gotoxy(5, fila++); cout << "  Anterior: " << actual->anterior;
+		gotoxy(5, fila++); cout << "  Siguiente: " << actual->siguiente;
+		fila++; // Espacio entre alimentos
+
+		actual = actual->siguiente;
+
+		// Pausa cada 5 elementos si hay muchos
+		if (posicion % 5 == 0 && actual != nullptr) {
+			gotoxy(5, fila++); cout << "Presione una tecla para continuar...";
+			_getch();
+			fila = 8; // Resetear posición
+			system("cls");
+			TituloVerAlimento();
+			// Volver a mostrar encabezados
+			gotoxy(5, fila++); cout << "Pos." << "\tCodigo" << "\tMarca" << "\tCaducidad" << "\tCant." << "\tPrecio" << "\tDireccion";
+			gotoxy(5, fila++); cout << "------------------------------------------------------------------------------------------------";
+		}
+	}
+
+	gotoxy(5, fila); cout << "Presione una tecla para volver al menu...";
+	_getch();
+}
+
+// Función para buscar un alimento por su código
+Alimento* buscarAlimento(Alimento* cabeza, int codigoBuscado) {
+	Alimento* actual = cabeza;
+	while (actual != nullptr) {
+		if (actual->codigo == codigoBuscado) {
+			// Mostrar información de direcciones cuando se encuentra
+			gotoxy(35, 21); cout << "Direccion del nodo: " << actual;
+			gotoxy(35, 22); cout << "Nodo anterior: " << actual->anterior;
+			gotoxy(35, 23); cout << "Nodo siguiente: " << actual->siguiente;
+			return actual;
+		}
+		actual = actual->siguiente;
+	}
+	return nullptr;
+}
+
+// Función para modificar un alimento
+void modificarAlimento(Alimento* cabeza) {
+	int codigoBuscado = 0;
+	Alimento* alimentoEncontrado = nullptr;
+	char respuesta;
+
+	if (cabeza == nullptr) {
+		gotoxy(40, 6); cout << "La lista esta vacia. No hay alimentos para modificar.";
+		gotoxy(40, 8); cout << "Presione una tecla para volver al menu de alimentos...";
+		_getch();
+		return;
+	}
+
+	gotoxy(40, 7); cout << "Ingrese el codigo del alimento a modificar: ";
+	cin >> codigoBuscado;
+
+	alimentoEncontrado = buscarAlimento(cabeza, codigoBuscado);
+
+	if (alimentoEncontrado == nullptr) {
+		gotoxy(45, 9); cout << "No se encontro ningun alimento con el codigo " << codigoBuscado << ".";
+		gotoxy(40, 11); cout << "Presione una tecla para volver al menu de alimentos...";
+		_getch();
+		return;
+	}
+
+	// Mostrar información actual
+	gotoxy(35, 9); cout << "------------------------------------------------";
+	gotoxy(40, 10); cout << "Informacion actual del alimento " << alimentoEncontrado->codigo;
+	gotoxy(35, 11); cout << "Direccion de nodo: " << alimentoEncontrado;
+	gotoxy(35, 12); cout << "Anterior: " << alimentoEncontrado->anterior;
+	gotoxy(35, 13); cout << "Siguiente: " << alimentoEncontrado->siguiente;
+	gotoxy(35, 14); cout << "Marca: " << alimentoEncontrado->marca;
+	gotoxy(35, 15); cout << "Fecha Caducidad: " << alimentoEncontrado->fechaCaducacion;
+	gotoxy(35, 16); cout << "Cantidad: " << alimentoEncontrado->cantidad;
+	gotoxy(35, 17); cout << "Categoria: " << alimentoEncontrado->categoria;
+	gotoxy(35, 18); cout << "Proveedor: " << alimentoEncontrado->proveedor;
+	gotoxy(35, 19); cout << "Precio: " << alimentoEncontrado->precio;
+	gotoxy(35, 20); cout << "Pais Origen: " << alimentoEncontrado->paisOrigen;
+	gotoxy(35, 21); cout << "------------------------------------------------";
+
+	// Preguntar si desea modificar
+	gotoxy(35, 23); cout << "                               ";
+	cin.ignore();
+	gotoxy(40, 22); cout << "Desea modificar este alimento? (S/N): ";
+	cin >> respuesta;
+
+	if (respuesta != 'S' && respuesta != 's') {
+		gotoxy(35, 23); cout << "Operacion cancelada. Presione una tecla para volver...";
+		_getch();
+		return;
+	}
+
+	// Modificar campos
+	gotoxy(35, 23); cout << "Deje en blanco los campos que no desea modificar.";
+	cin.ignore();
+
+	string nuevaMarca = leerCadena("Nueva marca (" + alimentoEncontrado->marca + "): ", 35, 24);
+	if (!nuevaMarca.empty()) alimentoEncontrado->marca = nuevaMarca;
+
+	string nuevaFecha = leerCadena("Nueva fecha caducidad (" + alimentoEncontrado->fechaCaducacion + "): ", 35, 25);
+	if (!nuevaFecha.empty()) alimentoEncontrado->fechaCaducacion = nuevaFecha;
+
+	string nuevaCantidad = leerCadena("Nueva cantidad (" + to_string(alimentoEncontrado->cantidad) + "): ", 35, 26);
+	if (!nuevaCantidad.empty()) alimentoEncontrado->cantidad = stoi(nuevaCantidad);
+
+	string nuevaCategoria = leerCadena("Nueva categoria (" + alimentoEncontrado->categoria + "): ", 35, 27);
+	if (!nuevaCategoria.empty()) alimentoEncontrado->categoria = nuevaCategoria;
+
+	string nuevoProveedor = leerCadena("Nuevo proveedor (" + alimentoEncontrado->proveedor + "): ", 35, 28);
+	if (!nuevoProveedor.empty()) alimentoEncontrado->proveedor = nuevoProveedor;
+
+	string nuevoPrecio = leerCadena("Nuevo precio (" + to_string(alimentoEncontrado->precio) + "): ", 35, 29);
+	if (!nuevoPrecio.empty()) alimentoEncontrado->precio = stof(nuevoPrecio);
+
+	string nuevoPais = leerCadena("Nuevo pais origen (" + alimentoEncontrado->paisOrigen + "): ", 35, 30);
+	if (!nuevoPais.empty()) alimentoEncontrado->paisOrigen = nuevoPais;
+
+	gotoxy(40, 32); cout << "Alimento modificado correctamente.";
+	gotoxy(40, 34); cout << "Presione una tecla para volver al menu...";
+	_getch();
+}
+
+// Función para eliminar un alimento de la lista
+void eliminarAlimento(Alimento*& cabeza, Alimento*& cola, int codigoBuscado) {
+	Alimento* alimentoEliminar = buscarAlimento(cabeza, codigoBuscado);
+
+	if (alimentoEliminar == nullptr) {
+		gotoxy(45, 9); cout << "No se encontro ningun alimento con el codigo " << codigoBuscado << ".";
+		return;
+	}
+
+	// Mostrar información del alimento a eliminar
+	gotoxy(35, 9); cout << "------------------------------------------------";
+	gotoxy(40, 10); cout << "Informacion del alimento a eliminar:";
+	gotoxy(35, 11); cout << "Codigo: " << alimentoEliminar->codigo;
+	gotoxy(35, 12); cout << "Marca: " << alimentoEliminar->marca;
+	gotoxy(35, 13); cout << "Proveedor: " << alimentoEliminar->proveedor;
+	gotoxy(35, 14); cout << "Direccion: " << alimentoEliminar;
+	gotoxy(35, 15); cout << "Anterior: " << alimentoEliminar->anterior;
+	gotoxy(35, 16); cout << "Siguiente: " << alimentoEliminar->siguiente;
+	gotoxy(35, 17); cout << "------------------------------------------------";
+
+	char confirmar;
+	gotoxy(40, 18); cout << "¿Esta seguro que desea eliminar este alimento? (S/N): ";
+	cin >> confirmar;
+
+	if (confirmar != 'S' && confirmar != 's') {
+		gotoxy(40, 19); cout << "Operacion cancelada.";
+		return;
+	}
+
+	// Reorganizar los punteros
+	if (alimentoEliminar->anterior != nullptr) {
+		alimentoEliminar->anterior->siguiente = alimentoEliminar->siguiente;
+	}
+	else {
+		cabeza = alimentoEliminar->siguiente;
+	}
+
+	if (alimentoEliminar->siguiente != nullptr) {
+		alimentoEliminar->siguiente->anterior = alimentoEliminar->anterior;
+	}
+	else {
+		cola = alimentoEliminar->anterior;
+	}
+
+	delete alimentoEliminar;
+	gotoxy(40, 19); cout << "Alimento eliminado correctamente.";
+}
+
+// Función para vaciar toda la lista de alimentos
+void vaciarListaAlimentos(Alimento*& cabeza, Alimento*& cola) {
+	if (cabeza == nullptr) {
+		gotoxy(40, 6); cout << "La lista ya esta vacia.";
+		return;
+	}
+
+	char confirmar;
+	gotoxy(40, 6); cout << "¿Esta seguro que desea vaciar toda la lista? (S/N): ";
+	cin >> confirmar;
+
+	if (confirmar != 'S' && confirmar != 's') {
+		gotoxy(40, 8); cout << "Operacion cancelada.";
+		return;
+	}
+
+	Alimento* actual = cabeza;
+	while (actual != nullptr) {
+		Alimento* temp = actual;
+		actual = actual->siguiente;
+		delete temp;
+	}
+
+	cabeza = cola = nullptr;
+	gotoxy(40, 8); cout << "Lista de alimentos vaciada correctamente.";
+}
+
+void InsertarProveedor(Lista* lista, int id, string nombre, string direccion, string telefono, string correo, string productos, string fechaRegistro, string estado) {
+	pNodo nuevo = new Proveedor();
+	nuevo->id = id;
+	nuevo->nombre = nombre;
+	nuevo->direccion = direccion;
+	nuevo->telefono = telefono;
+	nuevo->correo = correo;
+	nuevo->productos = productos;
+	nuevo->fechaRegistro = fechaRegistro;
+	nuevo->estado = estado;
+
+	if (!*lista) {
+		*lista = nuevo;
+		nuevo->siguiente = nuevo; // Lista circular
+	}
+	else if (id < (*lista)->id) { // Insertar al inicio
+		pNodo actual = *lista;
+		while (actual->siguiente != *lista) {
+			actual = actual->siguiente;
+		}
+		actual->siguiente = nuevo;
+		nuevo->siguiente = *lista;
+		*lista = nuevo;
+	}
+	else { // Insertar en medio o al final
+		pNodo actual = *lista;
+		while (actual->siguiente != *lista && actual->siguiente->id < id) {
+			actual = actual->siguiente;
+		}
+		nuevo->siguiente = actual->siguiente;
+		actual->siguiente = nuevo;
+	}
+
+	// Mostrar mensaje de confirmación
+	gotoxy(35, 17); cout << "Proveedor con el ID " << id << " agregado exitosamente." << endl;
+}
+
+void BorrarProveedor(Lista* lista, int id) {
+	pNodo actual = *lista;
+	pNodo anterior = nullptr;
+	bool encontrado = false;
+	int contador = 1; // Contador para la posición de cada proveedor
+
+	// Buscar el proveedor en la lista
+	do {
+		if (actual->id == id) {
+			encontrado = true;
+			break;
+		}
+		anterior = actual;
+		actual = actual->siguiente;
+		contador++;
+	} while (actual != *lista);
+
+	if (!encontrado) {
+		gotoxy(40, 8); cout << "Proveedor con ID " << id << " no encontrado." << endl;
+		gotoxy(45, 10); cout << "Presione una tecla para continuar...";
+		_getch();
+		return;
+	}
+
+	// Mostrar los datos del proveedor encontrado
+	gotoxy(45, 8); cout << "-----------------------------------------" << endl;
+	gotoxy(45, 9); cout << "ID: " << actual->id << endl;
+	gotoxy(45, 10); cout << "Nombre: " << actual->nombre << endl;
+	gotoxy(45, 11); cout << "Direccion: " << actual->direccion << endl;
+	gotoxy(45, 12); cout << "Telefono: " << actual->telefono << endl;
+	gotoxy(45, 13); cout << "Correo: " << actual->correo << endl;
+	gotoxy(45, 14); cout << "Productos: " << actual->productos << endl;
+	gotoxy(45, 15); cout << "Fecha de Registro: " << actual->fechaRegistro << endl;
+	gotoxy(45, 16); cout << "Estado: " << actual->estado << endl;
+
+	// Determinar la posición en la lista
+	if (actual == *lista) {
+		gotoxy(45, 17); cout << "Posicion en la lista: Primero" << endl;
+	}
+	else if (actual->siguiente == *lista) {
+		gotoxy(45, 17); cout << "Posicion en la lista: Ultimo" << endl;
+	}
+	else {
+		gotoxy(45, 17); cout << "Posicion en la lista: " << contador << endl;
+	}
+
+	gotoxy(45, 18); cout << "Direccion nodo actual: " << actual << endl;
+	gotoxy(45, 19); cout << "Direccion siguiente nodo: " << actual->siguiente << endl;
+	gotoxy(45, 20); cout << "-----------------------------------------" << endl;
+
+	// Preguntar si desea eliminar el proveedor
+	char respuesta = leerCaracter("Desea eliminar este proveedor? (S/N): ", "SN", 40, 22);
+	if (respuesta != 'S' && respuesta != 's') {
+		gotoxy(45, 24); cout << "Operación cancelada." << endl;
+		return;
+	}
+
+	// Caso especial: si el nodo a eliminar es el primero de la lista
+	if (actual == *lista) {
+		if (actual->siguiente == *lista) {
+			// Solo hay un nodo en la lista
+			delete actual;
+			*lista = nullptr;
+		}
+		else {
+			// Hay más de un nodo en la lista
+			anterior = *lista;
+			while (anterior->siguiente != *lista) {
+				anterior = anterior->siguiente;
+			}
+			anterior->siguiente = (*lista)->siguiente;
+			*lista = (*lista)->siguiente;
+			delete actual;
+		}
+	}
+	else {
+		// Nodo encontrado, eliminarlo
+		anterior->siguiente = actual->siguiente;
+		delete actual;
+	}
+
+	gotoxy(40, 24); cout << "Proveedor con ID " << id << " eliminado." << endl;
+}
+
+void MostrarProveedores(Lista lista) {
+	if (lista == nullptr) {
+		// La lista está vacía
+		gotoxy(45, 6); cout << "La lista de proveedores esta vacia." << endl;
+		gotoxy(35, 8); cout << "Presione una tecla para regresar al menu de lista circular...";
+		_getch();
+		return;
+	}
+
+	pNodo actual = lista;
+	int contador = 1; // Contador para la posición de cada proveedor
+	cout << endl;
+	do {
+		// Mostrar el resumen del proveedor actual
+		cout << endl;
+		cout << "\t\t\t\t\t------------------------------------------" << endl;
+		cout << "\t\t\t\t\tID: " << actual->id << endl;
+		cout << "\t\t\t\t\tNombre: " << actual->nombre << endl;
+		cout << "\t\t\t\t\tTelefono: " << actual->telefono << endl;
+		cout << "\t\t\t\t\tProductos: " << actual->productos << endl;
+		cout << "\t\t\t\t\tEstado: " << actual->estado << endl;
+
+		// Determinar la posición en la lista
+		if (actual == lista) {
+			cout << "\t\t\t\t\tPosicion en la lista: Primero" << endl;
+		}
+		else if (actual->siguiente == lista) {
+			cout << "\t\t\t\t\tPosicion en la lista: Ultimo" << endl;
+		}
+		else {
+			cout << "\t\t\t\t\tPosicion en la lista: " << contador << endl;
+		}
+
+		cout << "\t\t\t\t\tDireccion nodo actual: " << actual << endl;
+		cout << "\t\t\t\t\tDireccion siguiente nodo: " << actual->siguiente << endl;
+		cout << "\t\t\t\t\t------------------------------------------" << endl;
+
+		// Avanzar al siguiente proveedor
+		actual = actual->siguiente;
+		contador++;
+	} while (actual != lista);
+
+	cout << endl;
+	cout << "\t\t\t\t\tPresione una tecla para volver al menu..." << endl;
+	_getch();
+}
+
+void BuscarProveedor(Lista lista, int id) {
+	pNodo actual = lista;
+	bool encontrado = false;
+	int contador = 1; // Contador para la posición de cada proveedor
+
+	do {
+		if (actual->id == id) {
+			// Proveedor encontrado, mostrar todos los datos
+			gotoxy(40, 8); cout << "-----------------------------------------" << endl;
+			gotoxy(40, 9); cout << "ID: " << actual->id << endl;
+			gotoxy(40, 10); cout << "Nombre: " << actual->nombre << endl;
+			gotoxy(40, 11); cout << "Direccion: " << actual->direccion << endl;
+			gotoxy(40, 12); cout << "Telefono: " << actual->telefono << endl;
+			gotoxy(40, 13); cout << "Correo: " << actual->correo << endl;
+			gotoxy(40, 14); cout << "Productos: " << actual->productos << endl;
+			gotoxy(40, 15); cout << "Fecha de Registro: " << actual->fechaRegistro << endl;
+			gotoxy(40, 16); cout << "Estado: " << actual->estado << endl;
+
+			// Determinar la posición en la lista
+			if (actual == lista) {
+				gotoxy(40, 17); cout << "Posicion en la lista: Primero" << endl;
+			}
+			else if (actual->siguiente == lista) {
+				gotoxy(40, 17); cout << "Posicion en la lista: Ultimo" << endl;
+			}
+			else {
+				gotoxy(40, 17); cout << "Posicion en la lista: " << contador << endl;
+			}
+
+			gotoxy(40, 18); cout << "Direccion nodo actual: " << actual << endl;
+			gotoxy(40, 19); cout << "Direccion siguiente nodo: " << actual->siguiente << endl;
+			gotoxy(40, 20); cout << "-----------------------------------------" << endl;
+			encontrado = true;
+			break;
+		}
+		actual = actual->siguiente;
+		contador++;
+	} while (actual != lista);
+
+	if (!encontrado) {
+		gotoxy(40, 8); cout << "Proveedor con ID " << id << " no encontrado." << endl;
+	}
+}
+
+void VaciarListaProveedores(Lista* lista) {
+	char respuesta;
+	TituloVaciarListaProveedores();
+	if (*lista == nullptr) {
+		// La lista está vacía
+		gotoxy(40, 6); cout << "La lista de proveedores ya esta vacia." << endl;
+		gotoxy(35, 8); cout << "Presione una tecla para regresar al menu de lista circular...";
+		_getch();
+		return;
+	}
+
+	// Mostrar la lista de proveedores
+	MostrarProveedores(*lista);
+
+	system("cls");
+	TituloVaciarListaProveedores();
+	// Preguntar si desea eliminar la lista
+	respuesta = leerCaracter("Desea eliminar todos los proveedores? (S/N): ", "SN", 40, 6);
+
+	if (respuesta != 'S' && respuesta != 's') {
+		gotoxy(20, 8); cout << "Operacion cancelada. Presione una tecla para volver al menu de lista circular..." << endl;
+		_getch();
+		return;
+	}
+
+	pNodo actual = *lista;
+	pNodo siguiente;
+
+	// Recorrer la lista y eliminar cada nodo
+	do {
+		siguiente = actual->siguiente;
+		delete actual;
+		actual = siguiente;
+	} while (actual != *lista);
+
+	// Establecer la lista como vacía
+	*lista = nullptr;
+
+	gotoxy(45, 8); cout << "La lista de proveedores ha sido vaciada." << endl;
+	gotoxy(35, 10); cout << "Presione una tecla para volver al menu de lista circular..." << endl;
 	_getch();
 }
 
@@ -1854,6 +2964,7 @@ char leerCaracter(string mensaje, string opcionesValidas, int x, int y) {
 	}
 }
 
+
 string leerCadena(string mensaje, int x, int y) {
 	string texto;
 	gotoxy(x, y); cout << mensaje;
@@ -1875,20 +2986,21 @@ void borrarLinea(int x, int y) {
 	SetConsoleTextAttribute(hConsole, wAttributes); // Restaurar los atributos de color originales
 }
 
+
 void TituloIngresaCerdo() {
-	gotoxy(35, 0); cout << "***********************************************";
-	gotoxy(35, 1); cout << "*                                            **";
-	gotoxy(35, 2); cout << "**     Ingresando informacion del cerdo      **";
-	gotoxy(35, 3); cout << "**                                           **";
-	gotoxy(35, 4); cout << "***********************************************";
+	gotoxy(35, 0); cout << "********************************************************";
+	gotoxy(35, 1); cout << "*                                                     **";
+	gotoxy(35, 2); cout << "**     Ingresando informacion del cerdo a la pila     **";
+	gotoxy(35, 3); cout << "**                                                    **";
+	gotoxy(35, 4); cout << "********************************************************";
 }
 
 void TituloVerCerdos() {
-	gotoxy(37, 0); cout << "*****************************************************";
-	gotoxy(37, 1); cout << "**                                                 **";
-	gotoxy(37, 2); cout << "**     Viendo informacion de la pila de cerdos     **";
-	gotoxy(37, 3); cout << "**                                                 **";
-	gotoxy(37, 4); cout << "*****************************************************";
+	gotoxy(45, 0); cout << "********************************************";
+	gotoxy(45, 1); cout << "**                                        **";
+	gotoxy(45, 2); cout << "**     Viendo la pila de cerdos           **";
+	gotoxy(45, 3); cout << "**                                        **";
+	gotoxy(45, 4); cout << "********************************************";
 }
 
 void TituloBuscarCerdo() {
@@ -1900,11 +3012,11 @@ void TituloBuscarCerdo() {
 }
 
 void TituloModificarCerdo() {
-	gotoxy(35, 0); cout << "***********************************************";
-	gotoxy(35, 1); cout << "**                                           **";
-	gotoxy(35, 2); cout << "**     Modificando informacion del cerdo     **";
-	gotoxy(35, 3); cout << "**                                           **";
-	gotoxy(35, 4); cout << "***********************************************";
+	gotoxy(35, 0); cout << "**********************************************************";
+	gotoxy(35, 1); cout << "**                                                      **";
+	gotoxy(35, 2); cout << "**     Modificando informacion del cerdo en la pila     **";
+	gotoxy(35, 3); cout << "**                                                      **";
+	gotoxy(35, 4); cout << "**********************************************************";
 }
 
 void TituloEliminarCerdo() {
@@ -1913,6 +3025,14 @@ void TituloEliminarCerdo() {
 	gotoxy(45, 2); cout << "**     Eliminando cerdo de la pila     **";
 	gotoxy(45, 3); cout << "**                                     **";
 	gotoxy(45, 4); cout << "*****************************************";
+}
+
+void TituloVaciarPila() {
+	gotoxy(45, 0); cout << "***********************************";
+	gotoxy(45, 1); cout << "**                               **";
+	gotoxy(45, 2); cout << "**    Vaciando pila de cerdos    **";
+	gotoxy(45, 3); cout << "**                               **";
+	gotoxy(45, 4); cout << "***********************************";
 }
 
 void TituloIngresaTrabajador() {
@@ -1940,11 +3060,11 @@ void TituloBuscarTrabajador() {
 }
 
 void TituloModificarTrabajador() {
-	gotoxy(45, 0); cout << "************************************";
-	gotoxy(45, 1); cout << "**                                **";
-	gotoxy(45, 2); cout << "**     Modificando trabajador     **";
-	gotoxy(45, 3); cout << "**                                **";
-	gotoxy(45, 4); cout << "************************************";
+	gotoxy(45, 0); cout << "***********************************************";
+	gotoxy(45, 1); cout << "**                                           **";
+	gotoxy(45, 2); cout << "**     Modificando trabajador de la cola     **";
+	gotoxy(45, 3); cout << "**                                           **";
+	gotoxy(45, 4); cout << "***********************************************";
 }
 
 void TituloEliminaTrabajador() {
@@ -1953,6 +3073,14 @@ void TituloEliminaTrabajador() {
 	gotoxy(40, 2); cout << "**    Eliminando trabajador de la cola    **";
 	gotoxy(40, 3); cout << "**                                        **";
 	gotoxy(40, 4); cout << "********************************************";
+}
+
+void TituloVaciarCola() {
+	gotoxy(45, 0); cout << "********************************************";
+	gotoxy(45, 1); cout << "**                                        **";
+	gotoxy(45, 2); cout << "**    Vaciando la cola de trabajadores    **";
+	gotoxy(45, 3); cout << "**                                        **";
+	gotoxy(45, 4); cout << "********************************************";
 }
 
 void TituloIngresaComprador() {
@@ -2001,6 +3129,109 @@ void TituloVaciarLista() {
 	gotoxy(45, 2); cout << "**    Vaciando la lista de compradores    **";
 	gotoxy(45, 3); cout << "**                                        **";
 	gotoxy(45, 4); cout << "********************************************";
+}
+
+// Implementación de las funciones de título para alimentos
+void TituloIngresaAlimento() {
+	gotoxy(35, 0); cout << "*************************************************";
+	gotoxy(35, 1); cout << "**                                             **";
+	gotoxy(35, 2); cout << "**     Ingresando informacion del alimento     **";
+	gotoxy(35, 3); cout << "**           (Lista Doble Enlazada)            **";
+	gotoxy(35, 4); cout << "**                                             **";
+	gotoxy(35, 5); cout << "*************************************************";
+}
+
+void TituloVerAlimento() {
+	gotoxy(35, 0); cout << "*************************************************";
+	gotoxy(35, 1); cout << "**                                             **";
+	gotoxy(35, 2); cout << "**     Visualizando informacion del alimento   **";
+	gotoxy(35, 3); cout << "**           (Lista Doble Enlazada)            **";
+	gotoxy(35, 4); cout << "**                                             **";
+	gotoxy(35, 5); cout << "*************************************************";
+}
+
+void TituloBuscarAlimento() {
+	gotoxy(35, 0); cout << "*************************************************";
+	gotoxy(35, 1); cout << "**                                             **";
+	gotoxy(35, 2); cout << "**     Buscando informacion del alimento       **";
+	gotoxy(35, 3); cout << "**           (Lista Doble Enlazada)            **";
+	gotoxy(35, 4); cout << "**                                             **";
+	gotoxy(35, 5); cout << "*************************************************";
+}
+
+void TituloModificarAlimento() {
+	gotoxy(35, 0); cout << "*************************************************";
+	gotoxy(35, 1); cout << "**                                             **";
+	gotoxy(35, 2); cout << "**     Modificando informacion del alimento    **";
+	gotoxy(35, 3); cout << "**           (Lista Doble Enlazada)            **";
+	gotoxy(35, 4); cout << "**                                             **";
+	gotoxy(35, 5); cout << "*************************************************";
+}
+
+void TituloEliminarAlimento() {
+	gotoxy(35, 0); cout << "*************************************************";
+	gotoxy(35, 1); cout << "**                                             **";
+	gotoxy(35, 2); cout << "**     Eliminando informacion del alimento     **";
+	gotoxy(35, 3); cout << "**           (Lista Doble Enlazada)            **";
+	gotoxy(35, 4); cout << "**                                             **";
+	gotoxy(35, 5); cout << "*************************************************";
+}
+
+void TituloVaciarListaAlimento() {
+	gotoxy(35, 0); cout << "*************************************************";
+	gotoxy(35, 1); cout << "**                                             **";
+	gotoxy(35, 2); cout << "**     Vaciando informacion del alimento       **";
+	gotoxy(35, 3); cout << "**           (Lista Doble Enlazada)            **";
+	gotoxy(35, 4); cout << "**                                             **";
+	gotoxy(35, 5); cout << "*************************************************";
+}
+
+void TituloInsertaProveedor() {
+	gotoxy(35, 0); cout << "*************************************************";
+	gotoxy(35, 1); cout << "**                                             **";
+	gotoxy(35, 2); cout << "**    Ingresando proveedor a lista circular    **";
+	gotoxy(35, 3); cout << "**                                             **";
+	gotoxy(35, 4); cout << "*************************************************";
+}
+
+void TituloVerProveedores() {
+	gotoxy(35, 0); cout << "***************************************************";
+	gotoxy(35, 1); cout << "**                                               **";
+	gotoxy(35, 2); cout << "**    Viendo la lista circular de proveedores    **";
+	gotoxy(35, 3); cout << "**                                               **";
+	gotoxy(35, 4); cout << "***************************************************";
+}
+
+void TituloModificarProveedor() {
+	gotoxy(35, 0); cout << "*************************************************";
+	gotoxy(35, 1); cout << "**                                             **";
+	gotoxy(35, 2); cout << "**    Modificando proveedor en lista circular  **";
+	gotoxy(35, 3); cout << "**                                             **";
+	gotoxy(35, 4); cout << "*************************************************";
+}
+
+void TituloBuscarProveedor() {
+	gotoxy(35, 0); cout << "*************************************************";
+	gotoxy(35, 1); cout << "**                                             **";
+	gotoxy(35, 2); cout << "**    Buscando proveedor en lista circular     **";
+	gotoxy(35, 3); cout << "**                                             **";
+	gotoxy(35, 4); cout << "*************************************************";
+}
+
+void TituloEliminarProveedor() {
+	gotoxy(35, 0); cout << "***************************************************";
+	gotoxy(35, 1); cout << "**                                               **";
+	gotoxy(35, 2); cout << "**    Eliminando proveedor de lista circular     **";
+	gotoxy(35, 3); cout << "**                                               **";
+	gotoxy(35, 4); cout << "***************************************************";
+}
+
+void TituloVaciarListaProveedores() {
+	gotoxy(35, 0); cout << "***************************************************";
+	gotoxy(35, 1); cout << "**                                               **";
+	gotoxy(35, 2); cout << "**    Vaciando lista circular de proveedores     **";
+	gotoxy(35, 3); cout << "**                                               **";
+	gotoxy(35, 4); cout << "***************************************************";
 }
 
 // Función para mover el cursor a una posición específica en la consola
