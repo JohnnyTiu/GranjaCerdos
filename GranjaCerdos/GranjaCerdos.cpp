@@ -742,7 +742,7 @@ void ProgramaPrincipal()
 			break;
 		case 4:
 			do {
-				system("color 89"); 
+				system("color 8F");
 				opcionMenuListaDoble = MenuListaDoble(tituloMenuListaDoble, opcionesMenuListaDoble, nOpcionesMenuListaDoble);
 				switch (opcionMenuListaDoble)
 				{
@@ -850,7 +850,7 @@ void ProgramaPrincipal()
 			break;
 		case 5:
 			do {
-				system("color 6C");  // Fondo amarillo, letra rojo claro
+				system("color 6F");  // Fondo amarillo, letra rojo claro
 				opcionMenuListaCircular = MenuListaCircular(tituloMenuListaCircular, opcionesMenuListaCircular, nOpcionesMenuListaCircular);
 				switch (opcionMenuListaCircular) {
 				case 1:
