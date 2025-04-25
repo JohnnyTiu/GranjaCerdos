@@ -590,6 +590,7 @@ void ProgramaPrincipal() {
 	Alimento* cola = nullptr;
 	int codigoBuscado = 0;
 
+	//Variables para el manejo de la vacunacion de cerdos (ABB)
 	FichaVacunacion fichaActual;
 	Vacuna* arbol = nullptr;
 	int idFichaBuscar = 0;
@@ -1015,39 +1016,54 @@ void ProgramaPrincipal() {
 					switch (opcionMenuABB) {
 					case 1: // Insertar ficha de vacunación
 						do {
-							system("cls");
-							TituloIngresaFicha();
+							system("cls"); 
+							TituloIngresaFicha(); 
 							gotoxy(35, 6); cout << "-------------------------------------------------------";
+
 							fichaActual.id = leerEntero("Ingrese el ID de la ficha: ", 35, 7);
 							fichaActual.fechaVacAct = leerCadena("Ingrese la fecha de la vacuna actual (dd/mm/aa): ", 35, 8);
 							fichaActual.nombreVacAct = leerCadena("Ingrese el nombre de la vacuna actual: ", 35, 9);
 							fichaActual.fechaVacSig = leerCadena("Ingrese la fecha de la proxima vacuna (dd/mm/aa): ", 35, 10);
 							fichaActual.nombreVacSig = leerCadena("Ingrese el nombre de la proxima vacuna: ", 35, 11);
-							gotoxy(35, 12); cout << "-------------------------------------------------------";
-							arbol = insertarNodo(arbol, fichaActual);
-							gotoxy(40, 14); cout << "Ficha de vacunacion insertada correctamente.";
-							rpt = leerCaracter("Desea ingresar otra ficha de vacunacion? (S/N): ", "SN", 40, 16);
-						} while (rpt == 'S' || rpt == 's');
-						system("cls");
-						TituloVerABB();
-						mostrarArbol(arbol);
-						_getch();
-						break;
 
+
+							gotoxy(35, 12); cout << "-------------------------------------------------------";
+
+							// Inserta la ficha de vacunación en el árbol binario de búsqueda (ABB).
+							arbol = insertarNodo(arbol, fichaActual);
+
+							gotoxy(40, 14); cout << "Ficha de vacunacion insertada correctamente.";
+
+							// Pregunta al usuario si desea ingresar otra ficha de vacunación.
+							rpt = leerCaracter("Desea ingresar otra ficha de vacunacion? (S/N): ", "SN", 40, 16);
+
+						} while (rpt == 'S' || rpt == 's'); // Repite el proceso si el usuario responde 'S' o 's'.
+
+						system("cls"); 
+						TituloVerABB(); 
+						mostrarArbol(arbol); 
+						_getch(); 
+						break;
 					case 2: // Buscar ficha de vacunación
 						do {
-						system("cls");
-						TituloBuscarFicha();
-						if (arbol == nullptr) {
-							gotoxy(35, 6); cout << "El arbol esta vacio. No hay fichas registradas para buscar.";
-							gotoxy(40, 8); cout << "Presione una tecla para volver al menu de ABB...";
-							_getch();
-							break;
-						}
-						idFichaBuscar = leerEntero("Ingrese el ID de la ficha que desea buscar: ", 45, 6);
-						{
+							system("cls"); // Limpia la pantalla para iniciar la búsqueda
+							TituloBuscarFicha(); // Muestra el título de la sección de búsqueda
+
+							// Verifica que el árbol no esté vacío
+							if (arbol == nullptr) {
+								gotoxy(35, 6); cout << "El arbol esta vacio. No hay fichas registradas para buscar.";
+								gotoxy(40, 8); cout << "Presione una tecla para volver al menu de ABB...";
+								_getch();
+								break;
+							}
+
+							// Se solicita al usuario el ID de la ficha a buscar
+							idFichaBuscar = leerEntero("Ingrese el ID de la ficha que desea buscar: ", 45, 6);
+
+							// Se busca el nodo en el árbol utilizando el ID
 							Vacuna* fichaEncontrada = buscarNodo(arbol, idFichaBuscar);
 							if (fichaEncontrada) {
+								// Si se encuentra la ficha, se muestran sus datos
 								gotoxy(45, 8); cout << "Ficha encontrada:";
 								gotoxy(40, 10); cout << "-----------------------------------------";
 								gotoxy(40, 11); cout << "ID: " << fichaEncontrada->ficha.id;
@@ -1058,10 +1074,12 @@ void ProgramaPrincipal() {
 								gotoxy(40, 16); cout << "-----------------------------------------";
 							}
 							else {
+								// Si no se encuentra, se informa al usuario
 								gotoxy(40, 8); cout << "No se encontro ninguna ficha con el ID " << idFichaBuscar << ".";
 							}
-						}
-						rpt = leerCaracter("Desea buscar otra ficha de vacunacion? (S/N): ", "SN", 40, 18);
+
+							// Se pregunta si se desea realizar otra búsqueda
+							rpt = leerCaracter("Desea buscar otra ficha de vacunacion? (S/N): ", "SN", 40, 18);
 						} while (rpt == 'S' || rpt == 's');
 						break;
 
@@ -3317,43 +3335,73 @@ void VaciarListaProveedores(Lista* lista) {
 	_getch();
 }
 
-//Crear un nodo
+// Crear un nodo de tipo Vacuna en un árbol binario
 Vacuna* crearNodo(const FichaVacunacion& ficha) {
 	Vacuna* nuevo = new Vacuna();
+
+	// Se asigna la ficha de vacunación proporcionada al nodo recién creado
 	nuevo->ficha = ficha;
+
+	// Se inicializan los punteros izquierdo y derecho como nulos, indicando que 
+	// este nodo aún no tiene hijos
 	nuevo->izq = nullptr;
 	nuevo->der = nullptr;
+
+	// Se retorna el puntero al nodo creado para su posterior uso en el árbol
 	return nuevo;
 }
 
-// Función para insertar un nodo en el ABB
+
+// Función para insertar un nuevo nodo en un Árbol Binario de Búsqueda (ABB)
 Vacuna* insertarNodo(Vacuna* raiz, const FichaVacunacion& ficha) {
+	// Si la raíz es nula, significa que el árbol está vacío o hemos llegado a un 
+	// punto donde debe insertarse un nuevo nodo, entonces se crea.
 	if (raiz == nullptr) {
 		return crearNodo(ficha);
 	}
+
+	// Si el ID de la nueva ficha es menor que el ID de la ficha en el nodo actual,
+	// insertamos recursivamente en el subárbol izquierdo.
 	if (ficha.id < raiz->ficha.id) {
 		raiz->izq = insertarNodo(raiz->izq, ficha);
 	}
+	// Si el ID de la nueva ficha es mayor que el ID de la ficha en el nodo actual,
+	// insertamos recursivamente en el subárbol derecho.
 	else if (ficha.id > raiz->ficha.id) {
 		raiz->der = insertarNodo(raiz->der, ficha);
 	}
+
+	// Finalmente, retornamos la raíz actual, manteniendo la estructura del árbol.
 	return raiz;
 }
 
+// Función para buscar un nodo en un Árbol Binario de Búsqueda (ABB)
 Vacuna* buscarNodo(Vacuna* raiz, int id) {
+	// Caso base: si el nodo actual es nulo o su ID coincide con el ID buscado, 
+	// se retorna el nodo (puede ser nulo si el nodo no existe en el árbol).
 	if (raiz == nullptr || raiz->ficha.id == id) {
 		return raiz;
 	}
+
+	// Si el ID buscado es menor que el ID en el nodo actual, 
+	// continuamos la búsqueda en el subárbol izquierdo.
 	if (id < raiz->ficha.id) {
 		return buscarNodo(raiz->izq, id);
 	}
+
+	// Si el ID buscado es mayor que el ID en el nodo actual, 
+	// continuamos la búsqueda en el subárbol derecho.
 	return buscarNodo(raiz->der, id);
 }
 
+// Función para mostrar la información de un nodo de tipo Vacuna en coordenadas específicas
 void mostrarNodo(Vacuna* nodo, int x, int y) {
+	// Si el nodo es nulo, simplemente se retorna sin mostrar nada
 	if (nodo == nullptr) return;
 
 	gotoxy(x, y); cout << "---------------------------";
+
+	// Se imprime los datos de la ficha de vacunación contenida en el nodo
 	gotoxy(x, y + 1); cout << "ID: " << nodo->ficha.id;
 	gotoxy(x, y + 2); cout << nodo->ficha.nombreVacSig;
 	gotoxy(x, y + 3); cout << nodo->ficha.fechaVacSig;
@@ -3361,8 +3409,10 @@ void mostrarNodo(Vacuna* nodo, int x, int y) {
 	gotoxy(x, y + 5); cout << "---------------------------";
 }
 
+// Función para mostrar el árbol binario de búsqueda en una representación jerárquica en consola.
 void mostrarArbol(Vacuna* raiz) {
-	// Cambiar el fondo a blanco y las letras a negro
+
+	// Cambia los colores de la consola: fondo blanco, letras negras.
 	cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 
 	system("cls");
@@ -3370,118 +3420,142 @@ void mostrarArbol(Vacuna* raiz) {
 
 	if (!raiz) {
 		gotoxy(55, 6); cout << "Arbol vacio.";
-		cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0); // Restaurar colores originales
+		cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
 		return;
 	}
 
-	// Nivel 1: raíz
+	// Nivel 1: Mostrar la raíz del árbol en la posición central.
 	mostrarNodo(raiz, 45, 5);
 
-	// Nivel 2: hijos directos de la raíz
+	// Nivel 2: Mostrar los hijos directos de la raíz (izquierdo y derecho).
 	if (raiz->izq) {
-		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Café con fondo blanco
+		// Conexión visual al hijo izquierdo con una barra inclinada "/"
+		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		gotoxy(45, 11); cout << "/";
-		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Negro con fondo blanco
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		mostrarNodo(raiz->izq, 20, 13);
 	}
 	if (raiz->der) {
-		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Café con fondo blanco
+		// Conexión visual al hijo derecho con una barra invertida "\"
+		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		gotoxy(69, 11); cout << "\\";
-		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Negro con fondo blanco
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		mostrarNodo(raiz->der, 70, 13);
 	}
 
-	// Nivel 3: nietos (hijos de los hijos)
+	// Nivel 3: Mostrar los nietos (hijos de los hijos).
 	if (raiz->izq && raiz->izq->izq) {
-		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Café con fondo blanco
+		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		gotoxy(24, 19); cout << "/";
-		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Negro con fondo blanco
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		mostrarNodo(raiz->izq->izq, 2, 21);
 	}
 	if (raiz->izq && raiz->izq->der) {
-		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Café con fondo blanco
+		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		gotoxy(42, 19); cout << "\\";
-		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Negro con fondo blanco
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		mostrarNodo(raiz->izq->der, 32, 21);
 	}
-
 	if (raiz->der && raiz->der->izq) {
-		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Café con fondo blanco
+		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		gotoxy(75, 19); cout << "/";
-		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Negro con fondo blanco
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		mostrarNodo(raiz->der->izq, 62, 21);
 	}
 	if (raiz->der && raiz->der->der) {
-		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Café con fondo blanco
+		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		gotoxy(92, 19); cout << "\\";
-		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Negro con fondo blanco
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		mostrarNodo(raiz->der->der, 90, 21);
 	}
-	// Restaurar colores originales
+
+	// Restaurar colores originales al finalizar la visualización.
 	cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
 }
 
+// Función para eliminar un nodo de un Árbol Binario de Búsqueda (ABB)
 Vacuna* eliminarNodo(Vacuna* raiz, int id, bool usarMinimoDerecha) {
+	// Si la raíz es nula, significa que el nodo no se encuentra en el árbol.
 	if (raiz == nullptr) return raiz;
 
+	// Si el ID buscado es menor que el ID en el nodo actual, 
+	// se busca recursivamente en el subárbol izquierdo.
 	if (id < raiz->ficha.id) {
 		raiz->izq = eliminarNodo(raiz->izq, id, usarMinimoDerecha);
 	}
+	// Si el ID buscado es mayor que el ID en el nodo actual, 
+	// se busca recursivamente en el subárbol derecho.
 	else if (id > raiz->ficha.id) {
 		raiz->der = eliminarNodo(raiz->der, id, usarMinimoDerecha);
 	}
 	else {
-		// Caso 1: nodo hoja
+		// CASO 1: El nodo a eliminar es una hoja (sin hijos).
 		if (raiz->izq == nullptr && raiz->der == nullptr) {
-			delete raiz;
-			return nullptr;
+			delete raiz; // Se libera la memoria del nodo eliminado.
+			return nullptr; // Se retorna nulo para eliminar la referencia en el árbol.
 		}
-		// Caso 2: un hijo
-		if (raiz->izq == nullptr) {
+
+		// CASO 2: El nodo tiene solo un hijo.
+		if (raiz->izq == nullptr) { // Solo tiene hijo derecho.
 			Vacuna* temp = raiz->der;
-			delete raiz;
-			return temp;
+			delete raiz; // Se elimina el nodo actual.
+			return temp; // Se retorna el hijo derecho para mantener la conexión.
 		}
-		else if (raiz->der == nullptr) {
+		else if (raiz->der == nullptr) { // Solo tiene hijo izquierdo.
 			Vacuna* temp = raiz->izq;
-			delete raiz;
-			return temp;
+			delete raiz; // Se elimina el nodo actual.
+			return temp; // Se retorna el hijo izquierdo para mantener la conexión.
 		}
-		// Caso 3: dos hijos
+
+		// CASO 3: El nodo tiene dos hijos.
 		Vacuna* temp;
 		if (usarMinimoDerecha) {
+			// Se obtiene el nodo con el menor valor en el subárbol derecho.
 			temp = nodoMinimo(raiz->der);
-			raiz->ficha = temp->ficha;
+			raiz->ficha = temp->ficha; // Se reemplaza la información del nodo actual.
 			raiz->der = eliminarNodo(raiz->der, temp->ficha.id, usarMinimoDerecha);
 		}
 		else {
+			// Se obtiene el nodo con el mayor valor en el subárbol izquierdo.
 			temp = nodoMaximo(raiz->izq);
-			raiz->ficha = temp->ficha;
+			raiz->ficha = temp->ficha; // Se reemplaza la información del nodo actual.
 			raiz->izq = eliminarNodo(raiz->izq, temp->ficha.id, usarMinimoDerecha);
 		}
 	}
-	return raiz;
+	return raiz; // Se retorna la raíz actualizada.
 }
 
+// Función para encontrar el nodo con el menor valor en un Árbol Binario de Búsqueda
 Vacuna* nodoMinimo(Vacuna* nodo) {
+	// Se recorre el árbol hacia la izquierda hasta encontrar el nodo más bajo.
 	while (nodo->izq != nullptr)
 		nodo = nodo->izq;
+
+	// Se retorna el nodo con el menor valor encontrado.
 	return nodo;
 }
 
+// Función para encontrar el nodo con el mayor valor en un Árbol Binario de Búsqueda
 Vacuna* nodoMaximo(Vacuna* nodo) {
+	// Se recorre el árbol hacia la derecha hasta encontrar el nodo más alto.
 	while (nodo->der != nullptr)
 		nodo = nodo->der;
+
+	// Se retorna el nodo con el mayor valor encontrado.
 	return nodo;
 }
+
+// Función para eliminar una ficha del árbol binario de búsqueda
 void eliminarFicha(Vacuna*& arbol) {
 	int idFichaEliminar;
 	char respuesta;
 
+	// Ciclo para permitir múltiples eliminaciones si el usuario lo desea.
 	do {
-		system("cls");
-		TituloEliminarFicha();
+		system("cls"); 
+		TituloEliminarFicha(); 
 
+		// Si el árbol está vacío, se muestra un mensaje y se retorna.
 		if (arbol == nullptr) {
 			gotoxy(35, 6); cout << "El arbol esta vacio. No hay fichas para eliminar.";
 			gotoxy(35, 8); cout << "Presione una tecla para volver al menu de ABB...";
@@ -3489,14 +3563,16 @@ void eliminarFicha(Vacuna*& arbol) {
 			return;
 		}
 
+		// Se solicita el ID de la ficha a eliminar y se busca en el árbol.
 		idFichaEliminar = leerEntero("Ingrese el ID de la ficha que desea eliminar: ", 35, 6);
-		Vacuna* nodoEliminar = buscarNodo(arbol, idFichaEliminar); // Usamos buscarNodo
+		Vacuna* nodoEliminar = buscarNodo(arbol, idFichaEliminar);
 
+		// Si el nodo no existe, se informa al usuario.
 		if (nodoEliminar == nullptr) {
 			gotoxy(35, 8); cout << "No se encontró ninguna ficha con ese ID.";
 		}
 		else {
-			// Mostrar la ficha encontrada
+			// Se muestra la ficha encontrada con sus detalles.
 			gotoxy(35, 8);  cout << "Ficha encontrada:";
 			gotoxy(35, 9);  cout << "ID: " << nodoEliminar->ficha.id;
 			gotoxy(35, 10); cout << "Fecha Vacunacion Actual: " << nodoEliminar->ficha.fechaVacAct;
@@ -3504,10 +3580,11 @@ void eliminarFicha(Vacuna*& arbol) {
 			gotoxy(35, 12); cout << "Fecha Vacunacion Siguiente: " << nodoEliminar->ficha.fechaVacSig;
 			gotoxy(35, 13); cout << "Nombre Vacuna Siguiente: " << nodoEliminar->ficha.nombreVacSig;
 
-			// Confirmar antes de eliminar
+			// Se confirma si el usuario realmente quiere eliminar la ficha.
 			char confirmar = leerCaracter("Desea eliminar esta ficha? (S/N): ", "SN", 35, 15);
 			if (confirmar == 'S' || confirmar == 's') {
 				if (nodoEliminar->izq != nullptr && nodoEliminar->der != nullptr) {
+					// Si el nodo tiene dos hijos, el usuario elige el método de reemplazo.
 					char opcion;
 					bool opcionValida = false;
 					do {
@@ -3520,7 +3597,7 @@ void eliminarFicha(Vacuna*& arbol) {
 							opcionValida = true;
 						}
 						else {
-							gotoxy(35, 19); cout << "Opcion invalida. Por favor ingresa D o I.               ";
+							gotoxy(35, 19); cout << "Opción inválida. Por favor ingresa D o I.";
 						}
 					} while (!opcionValida);
 
@@ -3528,81 +3605,120 @@ void eliminarFicha(Vacuna*& arbol) {
 					arbol = eliminarNodo(arbol, idFichaEliminar, usarMinimoDerecha);
 				}
 				else {
+					// Si el nodo no tiene dos hijos, se elimina usando el mínimo derecho por defecto.
 					arbol = eliminarNodo(arbol, idFichaEliminar, true);
 				}
 
+				// Confirmación y actualización del árbol en consola.
 				gotoxy(35, 21); cout << "Ficha eliminada correctamente.";
 				gotoxy(35, 22); cout << "Estructura del ABB actualizada:";
 				mostrarArbol(arbol);
 			}
 			else {
-				gotoxy(35, 17); cout << "Operacion cancelada. No se elimino la ficha.";
+				gotoxy(35, 17); cout << "Operación cancelada. No se eliminó la ficha.";
 			}
 		}
 
+		// Si el árbol quedó vacío tras la eliminación, se informa al usuario y se finaliza el ciclo.
 		if (arbol == nullptr) {
-			gotoxy(35, 24); cout << "El arbol ahora esta vacio. No hay mas fichas para eliminar.";
-			gotoxy(35, 26); cout << "Presione una tecla para volver al menu de ABB...";
+			gotoxy(35, 24); cout << "El árbol ahora está vacío. No hay más fichas para eliminar.";
+			gotoxy(35, 26); cout << "Presione una tecla para volver al menú de ABB...";
 			_getch();
 			break;
 		}
 
+		// Se pregunta si el usuario quiere eliminar otra ficha.
 		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
 		respuesta = leerCaracter("Desea eliminar otra ficha? (S/N): ", "SN", 40, 28);
 		cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
+
 	} while (respuesta == 'S' || respuesta == 's');
 }
 
+// Función para recorrer el árbol en preorden y mostrar los IDs de los nodos
 void recorrerPreorden(Vacuna* raiz, int x_base, int y_base, int& offset) {
+	// Si el nodo es nulo, no hay nada que procesar, así que se retorna.
 	if (raiz == nullptr) return;
 
-	// Cambiar color
 	cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+
+	// Posiciona el cursor en las coordenadas definidas (x_base + offset, y_base) para mostrar el ID.
 	gotoxy(x_base + offset, y_base);
 	cout << "ID: " << raiz->ficha.id << ", ";
+
+	// Se incrementa `offset` para desplazar la siguiente impresión.
 	offset += 10;
 
+	// Restaurar colores a los originales después de imprimir el ID.
 	cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
 
+	// Llamadas recursivas para recorrer primero el subárbol izquierdo y luego el derecho.
 	recorrerPreorden(raiz->izq, x_base, y_base, offset);
 	recorrerPreorden(raiz->der, x_base, y_base, offset);
 }
 
+// Función para recorrer el árbol en inorden y mostrar los IDs de los nodos
 void recorrerInorden(Vacuna* raiz, int x_base, int y_base, int& offset) {
+	// Si el nodo es nulo, no hay nada que procesar, así que se retorna.
 	if (raiz == nullptr) return;
 
+	// Llamada recursiva al subárbol izquierdo, explorando primero los nodos menores.
 	recorrerInorden(raiz->izq, x_base, y_base, offset);
 
 	cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+
+	// Posiciona el cursor en la coordenada definida para mostrar el ID del nodo actual.
 	gotoxy(x_base + offset, y_base);
 	cout << "ID: " << raiz->ficha.id << ", ";
+
+	// Se incrementa `offset` para desplazar la siguiente impresión en consola.
 	offset += 10;
 
 	cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
 
+	// Llamada recursiva al subárbol derecho, explorando luego los nodos mayores.
 	recorrerInorden(raiz->der, x_base, y_base, offset);
 }
 
+// Función para recorrer el árbol en postorden y mostrar los IDs de los nodos
 void recorrerPostorden(Vacuna* raiz, int x_base, int y_base, int& offset) {
+	// Si el nodo es nulo, no hay nada que procesar, así que se retorna.
 	if (raiz == nullptr) return;
 
+	// Llamada recursiva al subárbol izquierdo, explorando primero los nodos menores.
 	recorrerPostorden(raiz->izq, x_base, y_base, offset);
+
+	// Llamada recursiva al subárbol derecho, explorando luego los nodos mayores.
 	recorrerPostorden(raiz->der, x_base, y_base, offset);
 
+
 	cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
-	gotoxy(x_base + offset, y_base);
-	cout << "ID: " << raiz->ficha.id << ", ";
+
+	// Posiciona el cursor en la coordenada definida para mostrar el ID del nodo actual.
+	gotoxy(x_base + offset, y_base); cout << "ID: " << raiz->ficha.id << ", ";
+
+	// Se incrementa `offset` para desplazar la siguiente impresión en consola.
 	offset += 10;
 
+	// Restaurar colores a los originales después de imprimir el ID.
 	cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
 }
 
-// Función para vaciar el árbol completo
+// Función para eliminar todos los nodos del árbol y vaciarlo completamente
 void vaciarArbol(Vacuna*& raiz) {
+	// Si el árbol está vacío, no hay nada que eliminar.
 	if (raiz == nullptr) return;
+
+	// Se aplica recursión para eliminar primero los nodos del subárbol izquierdo.
 	vaciarArbol(raiz->izq);
+
+	// Se aplica recursión para eliminar luego los nodos del subárbol derecho.
 	vaciarArbol(raiz->der);
+
+	// Se elimina el nodo actual y se libera la memoria.
 	delete raiz;
+
+	// Se asigna `nullptr` para indicar que el árbol ahora está vacío.
 	raiz = nullptr;
 }
 
