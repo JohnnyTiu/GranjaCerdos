@@ -753,12 +753,9 @@ void ProgramaPrincipal() {
 				switch (opcionMenuLista)
 				{
 				case 1:
-					do {
 						system("cls");
 						TituloIngresaComprador();
 						gestionarIngresoCompradores(compradores);
-						gotoxy(45, 24); cout << "Desea ingresar otro comprador? (S/N): ";
-					} while (leerCaracter("", "SN", 45, 24) == 'S');
 					break;
 				case 2:
 					system("cls");
@@ -2338,8 +2335,7 @@ void gestionarIngresoCompradores(Comprador*& compradores) {
 		Comprador* nuevo = CrearComprador();
 		insertarComprador(compradores, nuevo);
 		gotoxy(35, 22); cout << "Comprador ingresado correctamente a la lista de compradores.";
-		gotoxy(45, 24); cout << "Desea ingresar otro comprador? (S/N): ";
-		rpt = leerCaracter("", "SN", 45, 24);
+		rpt = leerCaracter("Desea ingresar otro comprador? (S/N): ", "SN", 45, 24);
 	} while (rpt == 's' || rpt == 'S');
 	gotoxy(40, 26); cout << "Presione una tecla para ver la lista actualizada...";
 	_getch();
@@ -2418,8 +2414,7 @@ void modificarComprador(Comprador*& compradores) {
 	}
 
 	do {
-		gotoxy(45, 7); cout << "Ingrese el ID del comprador a modificar: ";
-		idCompradorBuscado = leerEntero("", 45, 7);
+		idCompradorBuscado = leerEntero("Ingrese el ID del comprador a modificar: ", 45, 7);
 		compradorEncontrado = buscarComprador(compradores, idCompradorBuscado);
 		if (compradorEncontrado == nullptr) {
 			gotoxy(40, 10); cout << "Comprador no encontrado. ¿Desea intentar con otro ID? (S/N): ";
