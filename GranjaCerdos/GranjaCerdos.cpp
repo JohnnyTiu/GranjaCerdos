@@ -17,8 +17,6 @@
 #include <limits> // Incluir la librería <limits>
 #pragma comment(lib, "winmm.lib")
 
-
-
 using namespace std;
 
 struct Cerdo {
@@ -64,8 +62,7 @@ struct ColaEmpleado {
 	Empleado* atras = nullptr;
 };
 
-struct Comprador
-{
+struct Comprador {
 	int id;
 	string nombre;
 	string telefono;
@@ -75,7 +72,7 @@ struct Comprador
 	string preferencias;
 	string fechaRegistro;
 	string estadoCuenta;
-	Comprador* sgte;
+	struct Comprador* sgte;
 };
 
 struct Proveedor {
@@ -108,11 +105,27 @@ struct Alimento {
 typedef Proveedor* Lista;
 typedef Proveedor* pNodo;
 
+// Estructuras para la vacunación de cerdos (ABB)
+struct FichaVacunacion {
+	int id;
+	string fechaVacAct;
+	string nombreVacAct;
+	string fechaVacSig;
+	string nombreVacSig;
+};
+
+struct Vacuna {
+	FichaVacunacion ficha; // Usar la nueva estructura
+	Vacuna* izq;
+	Vacuna* der;
+};
+
 void umg();
 void Integrantes();
 void PantallaLogo();
 void ProgramaPrincipal();
 int MenuPrincipal(const char* tituloMenuPrincipal, const char* opcionesMenuPrincipal[], int nOpcionesMenuPrincipal);
+// Prototipos para el manejo de funciones de la pila de cerdos
 int MenuPila(const char* tituloMenuPila, const char* opcionesMenuPila[], int nOpcionesMenuPila);
 void TituloIngresaCerdo();
 void TituloVerCerdos();
@@ -127,6 +140,7 @@ void modificarCerdo(Cerdo* pila);
 void eliminarCerdosPila(Cerdo*& pila);
 void sacarPila(Cerdo*& pila);
 void vaciarPila(Cerdo*& pila);
+// Prototipos para el manejo de funciones de la cola de empleados
 int MenuCola(const char* tituloMenuCola, const char* opcionesMenuCola[], int nOpcionesMenuCola);
 void TituloIngresaTrabajador();
 void TituloVerTrabajadores();
@@ -134,7 +148,6 @@ void TituloBuscarTrabajador();
 void TituloModificarTrabajador();
 void TituloEliminaTrabajador();
 void TituloVaciarCola();
-//Prototipos para el manejo de funciones de los empleados
 Empleado* crearEmpleado();
 void encolarEmpleado(ColaEmpleado& q, Empleado* nuevo);
 void gestionarIngresoEmpleados(ColaEmpleado& q);
@@ -189,13 +202,36 @@ void MostrarProveedores(Lista lista);
 void BuscarProveedor(Lista lista, int id);
 void modificarProveedor(Lista* lista);
 void VaciarListaProveedores(Lista* lista);
-//Prototipos para el manejo de funciones de los proveedores
+//Prototipos para el manejo de funciones de la vacunacion de cerdos (ABB)
+int MenuABB(const char* tituloMenuABB, const char* opcionesMenuABB[], int nOpcionesMenuABB);
+void TituloIngresaFicha();
+void TituloVerABB();
+void TituloBuscarFicha();
+void TituloRecorrerABB();
+void TituloEliminarFicha();
+void TituloVaciarABB();
+Vacuna* crearNodo(const FichaVacunacion& ficha);
+Vacuna* insertarNodo(Vacuna* raiz, const FichaVacunacion& ficha);
+Vacuna* buscarNodo(Vacuna* raiz, int id);
+Vacuna* eliminarNodo(Vacuna* raiz, int id);
+void mostrarNodo(Vacuna* nodo, int x, int y);
+void mostrarArbol(Vacuna* raiz);
+void recorrerPreorden(Vacuna* raiz, int x_base, int y_base, int& offset);
+void recorrerInorden(Vacuna* raiz, int x_base, int y_base, int& offset);
+void recorrerPostorden(Vacuna* raiz, int x_base, int y_base, int& offset);
+Vacuna* nodoMinimo(Vacuna* nodo);
+Vacuna* nodoMaximo(Vacuna* nodo);
+Vacuna* eliminarNodo(Vacuna* raiz, int id, bool usarMinimoDerecha = true);
+void eliminarFicha(Vacuna*& arbol);
+void vaciarArbol(Vacuna*& raiz);
+// Funciones extras para el programa
 void gotoxy(int, int);
 int leerEntero(string mensaje, int x, int y);
 double leerDecimal(string mensaje, int x, int y);
 char leerCaracter(string mensaje, string opcionesValidas, int x, int y);
 string leerCadena(string mensaje, int x, int y);
 void borrarLinea(int x, int y);
+void cambiarColorConsola(WORD texto, WORD fondo);
 BOOL WINAPI ConsoleHandler(DWORD event);	// Prototipo de la función de manejo de evententos por si el usuario cierra la consola con la x
 
 
@@ -400,14 +436,13 @@ void PantallaLogo() {
 	SetConsoleTextAttribute(hConsole, 7); // Fondo negro y texto blanco
 }
 
-void ProgramaPrincipal() 
-{
+void ProgramaPrincipal() {
 	
 	system("cls");
 	bool repite = true;
 
 	int opcionMenuPrincipal;
-	int nOpcionesMenuPrincipal = 6;
+	int nOpcionesMenuPrincipal = 7;
 
 	int opcionMenuPila;
 	int nOpcionesMenuPila = 8;
@@ -424,6 +459,9 @@ void ProgramaPrincipal()
 	int opcionMenuListaCircular;
 	int nOpcionesMenuListaCircular = 8;
 
+	int opcionMenuABB;
+	int nOpcionesMenuABB = 8;
+
 	const char* tituloMenuPrincipal = "Menu Principal de la Granja";
 	const char* opcionesMenuPrincipal[] = {
 		"Gestionar Informacion de los cerdos (Pila)",
@@ -431,6 +469,7 @@ void ProgramaPrincipal()
 		"Gestionar Informacion de los Compradores (Lista simple)",
 		"Gestionar Informacion de los Productos (Lista doble)",
 		"Gestionar Informacion de los proveedores (Lista circular)",
+		"Gestionar Informacion de la vacunacion de cerdos (ABB)",
 		"Salir del programa"
 	};
 
@@ -453,7 +492,7 @@ void ProgramaPrincipal()
 		"Buscar a un trabajador",
 		"Modificar la informacion de algun trabajador",
 		"Eliminar a un trabajador",
-		"Vaciar cola d trabajadores",
+		"Vaciar cola de trabajadores",
 		"Regresar al menu principal",
 		"Salir del programa"
 	};
@@ -490,6 +529,18 @@ void ProgramaPrincipal()
 		"Eliminar proveedores",
 		"Ver lista proveedores",
 		"Vaciar lista de proveedores",
+		"Regresar al menu principal",
+		"Salir del programa"
+	};
+
+	const char* tituloMenuABB = "Gestionar vacunacion de cerdos (ABB)";
+	const char* opcionesMenuABB[] = {
+		"Insertar ficha de vacunacion",
+		"Buscar ficha de vacunacion",
+		"Ver estructura de vacunacion",
+		"Recorrer la estructura de vacunacion (Pre, In, Post)",
+		"Eliminar ficha de la estructura",
+		"Vaciar la estructura",
 		"Regresar al menu principal",
 		"Salir del programa"
 	};
@@ -538,6 +589,14 @@ void ProgramaPrincipal()
 	Alimento* cabeza = nullptr;
 	Alimento* cola = nullptr;
 	int codigoBuscado = 0;
+
+	FichaVacunacion fichaActual;
+	Vacuna* arbol = nullptr;
+	int idFichaBuscar = 0;
+	int idFichaEliminar = 0;
+	int x = 35;
+	int y = 31; 
+	int offset = 0;
 
 	do {
 		system("color 1F");  // Fondo azul, letra blanca brillante
@@ -949,7 +1008,158 @@ void ProgramaPrincipal()
 				}
 			} while (opcionMenuListaCircular != 7 && repite);
 			break;
-		case 6:
+			case 6:
+				do {
+					system("color 4F");  // Fondo rojo, letra blanca brillante
+					opcionMenuABB = MenuABB(tituloMenuABB, opcionesMenuABB, nOpcionesMenuABB);
+					switch (opcionMenuABB) {
+					case 1: // Insertar ficha de vacunación
+						do {
+							system("cls");
+							TituloIngresaFicha();
+							gotoxy(35, 6); cout << "-------------------------------------------------------";
+							fichaActual.id = leerEntero("Ingrese el ID de la ficha: ", 35, 7);
+							fichaActual.fechaVacAct = leerCadena("Ingrese la fecha de la vacuna actual (dd/mm/aa): ", 35, 8);
+							fichaActual.nombreVacAct = leerCadena("Ingrese el nombre de la vacuna actual: ", 35, 9);
+							fichaActual.fechaVacSig = leerCadena("Ingrese la fecha de la proxima vacuna (dd/mm/aa): ", 35, 10);
+							fichaActual.nombreVacSig = leerCadena("Ingrese el nombre de la proxima vacuna: ", 35, 11);
+							gotoxy(35, 12); cout << "-------------------------------------------------------";
+							arbol = insertarNodo(arbol, fichaActual);
+							gotoxy(40, 14); cout << "Ficha de vacunacion insertada correctamente.";
+							rpt = leerCaracter("Desea ingresar otra ficha de vacunacion? (S/N): ", "SN", 40, 16);
+						} while (rpt == 'S' || rpt == 's');
+						system("cls");
+						TituloVerABB();
+						mostrarArbol(arbol);
+						_getch();
+						break;
+
+					case 2: // Buscar ficha de vacunación
+						do {
+						system("cls");
+						TituloBuscarFicha();
+						if (arbol == nullptr) {
+							gotoxy(35, 6); cout << "El arbol esta vacio. No hay fichas registradas para buscar.";
+							gotoxy(40, 8); cout << "Presione una tecla para volver al menu de ABB...";
+							_getch();
+							break;
+						}
+						idFichaBuscar = leerEntero("Ingrese el ID de la ficha que desea buscar: ", 45, 6);
+						{
+							Vacuna* fichaEncontrada = buscarNodo(arbol, idFichaBuscar);
+							if (fichaEncontrada) {
+								gotoxy(45, 8); cout << "Ficha encontrada:";
+								gotoxy(40, 10); cout << "-----------------------------------------";
+								gotoxy(40, 11); cout << "ID: " << fichaEncontrada->ficha.id;
+								gotoxy(40, 12); cout << "Fecha Vacuna Actual: " << fichaEncontrada->ficha.fechaVacAct;
+								gotoxy(40, 13); cout << "Nombre Vacuna Actual: " << fichaEncontrada->ficha.nombreVacAct;
+								gotoxy(40, 14); cout << "Fecha Proxima Vacuna: " << fichaEncontrada->ficha.fechaVacSig;
+								gotoxy(40, 15); cout << "Nombre Proxima Vacuna: " << fichaEncontrada->ficha.nombreVacSig;
+								gotoxy(40, 16); cout << "-----------------------------------------";
+							}
+							else {
+								gotoxy(40, 8); cout << "No se encontro ninguna ficha con el ID " << idFichaBuscar << ".";
+							}
+						}
+						rpt = leerCaracter("Desea buscar otra ficha de vacunacion? (S/N): ", "SN", 40, 18);
+						} while (rpt == 'S' || rpt == 's');
+						break;
+
+					case 3: // Ver estructura del ABB
+						system("cls");
+						TituloVerABB();
+						mostrarArbol(arbol);
+
+						// Cambiar el color a texto negro y fondo blanco
+						cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+						gotoxy(45, 28); cout << "Presione una tecla para volver al menu de ABB";
+
+						// Restaurar colores originales
+						cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
+						_getch();
+						break;
+
+					case 4: // Recorrer la estructura del ABB
+						system("cls");
+						TituloRecorrerABB();
+						if (arbol == nullptr) {
+							gotoxy(40, 6); cout << "El arbol esta vacio. No hay arbol para recorrer.";
+
+							cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+							gotoxy(40, 8); cout << "Presione una tecla para volver al menu de ABB...";
+							cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
+							_getch();
+							break;
+						}
+
+						mostrarArbol(arbol);
+						cout << endl;
+						cout << endl;
+						cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+						gotoxy(25, 30); cout << "Recorrido Preorden: ";
+						// Recorrido Inorden
+						offset = 0;
+						recorrerPreorden(arbol, 35, 31, offset);
+
+						cout << endl;
+						x = 35, y = 32;
+						cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+						gotoxy(25, 31); cout << "Recorrido Inorden: ";
+						// Recorrido Inorden
+						offset = 0;
+						recorrerInorden(arbol, 35, 32, offset);
+
+						cout << endl;
+						x = 35, y = 33;
+						cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+						gotoxy(25, 32); cout << "Recorrido Postorden: ";
+						// Recorrido Postorden
+						offset = 0;
+						recorrerPostorden(arbol, 35, 33, offset);
+
+						cout << endl;
+						cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+						gotoxy(45, 34); cout << "\t\t\t\t\tPresione una tecla para volver al menu de ABB";
+						cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
+						_getch();
+						break;
+					case 5: // Eliminar ficha de la estructura
+							eliminarFicha(arbol);
+						break;
+					case 6: // Vaciar la estructura
+						system("cls");
+						TituloVaciarABB();
+
+						if (arbol == nullptr) {
+							gotoxy(30, 6); cout << "El arbol no tiene elementos ingresados, por lo tanto ya estaba vacio.";
+							gotoxy(40, 8); cout << "Presione una tecla para volver al menu de ABB...";
+							_getch();
+							break;
+						}
+
+						rpt = leerCaracter("Est seguro de que desea vaciar el arbol? (S/N): ", "SN", 35, 6);
+
+						if (rpt == 'S' || rpt == 's') {
+							vaciarArbol(arbol);
+							gotoxy(35, 8); cout << "El ABB ha sido vaciado correctamente.";
+						}
+						else {
+							gotoxy(35, 8); cout << "Operacion cancelada. El arbol no fue vaciado.";
+						}
+
+						gotoxy(40, 10); cout << "Presione una tecla para volver al menu de ABB...";
+						_getch();
+						break;
+					case 7: // Regresar al menú principal
+						break;
+
+					case 8: // Salir del programa
+						repite = false;
+						break;
+					}
+				} while (opcionMenuABB != 7 && repite);
+				break;
+		case 7:
 			repite = false;
 			break;
 		}
@@ -977,8 +1187,8 @@ int MenuPrincipal(const char* tituloMenuPrincipal, const char* opcionesMenuPrinc
 			}
 		}
 
-		gotoxy(30, 17); cout << "*************************************************************************" << endl;
-		gotoxy(18, 19); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+		gotoxy(30, 18); cout << "*************************************************************************" << endl;
+		gotoxy(18, 20); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
 
 		tecla = _getch(); // Captura la tecla presionada
 
@@ -1183,6 +1393,42 @@ int MenuListaCircular(const char* tituloMenuListaCircular, const char* opcionesM
 			break;
 		case 80: // Flecha abajo
 			if (opcionSeleccionada < nOpcionesMenuListaCircular) opcionSeleccionada++;
+			break;
+		case 13: // Enter
+			repite = false;
+			break;
+		}
+	} while (repite);
+	return opcionSeleccionada;
+}
+
+int MenuABB(const char* tituloMenuABB, const char* opcionesMenuABB[], int nOpcionesMenuABB) {
+	int opcionSeleccionada = 1; // Opción inicial
+	int tecla = 0;
+	bool repite = true;
+	do {
+		system("cls");
+		gotoxy(30, 8); cout << "**********************************************************" << endl;
+		gotoxy(30, 9); cout << "***        " << tituloMenuABB << "        ***" << endl;
+		gotoxy(30, 10); cout << "**********************************************************" << endl;
+		for (int i = 0; i < nOpcionesMenuABB; i++) {
+			gotoxy(33, 11 + i);
+			if (i + 1 == opcionSeleccionada) {
+				cout << " ==> " << opcionesMenuABB[i];
+			}
+			else {
+				cout << "     " << opcionesMenuABB[i];
+			}
+		}
+		gotoxy(30, 19); cout << "**********************************************************" << endl;
+		gotoxy(18, 21); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+		tecla = _getch(); // Captura la tecla presionada
+		switch (tecla) {
+		case 72: // Flecha arriba
+			if (opcionSeleccionada > 1) opcionSeleccionada--;
+			break;
+		case 80: // Flecha abajo
+			if (opcionSeleccionada < nOpcionesMenuABB) opcionSeleccionada++;
 			break;
 		case 13: // Enter
 			repite = false;
@@ -2670,6 +2916,7 @@ void vaciarListaAlimentos(Alimento*& cabeza, Alimento*& cola) {
 	gotoxy(40, 8); cout << "Lista de alimentos vaciada correctamente.";
 }
 
+//
 void InsertarProveedor(Lista* lista, int id, string nombre, string direccion, string telefono, string correo, string productos, string fechaRegistro, string estado) {
 	// Crear un nuevo nodo de tipo Proveedor
 	pNodo nuevo = new Proveedor();
@@ -2721,7 +2968,6 @@ void InsertarProveedor(Lista* lista, int id, string nombre, string direccion, st
 	gotoxy(35, 17);
 	cout << "Proveedor con el ID " << id << " agregado exitosamente." << endl;
 }
-
 
 void BorrarProveedor(Lista* lista, int id) {
 	pNodo actual = *lista;
@@ -3071,6 +3317,295 @@ void VaciarListaProveedores(Lista* lista) {
 	_getch();
 }
 
+//Crear un nodo
+Vacuna* crearNodo(const FichaVacunacion& ficha) {
+	Vacuna* nuevo = new Vacuna();
+	nuevo->ficha = ficha;
+	nuevo->izq = nullptr;
+	nuevo->der = nullptr;
+	return nuevo;
+}
+
+// Función para insertar un nodo en el ABB
+Vacuna* insertarNodo(Vacuna* raiz, const FichaVacunacion& ficha) {
+	if (raiz == nullptr) {
+		return crearNodo(ficha);
+	}
+	if (ficha.id < raiz->ficha.id) {
+		raiz->izq = insertarNodo(raiz->izq, ficha);
+	}
+	else if (ficha.id > raiz->ficha.id) {
+		raiz->der = insertarNodo(raiz->der, ficha);
+	}
+	return raiz;
+}
+
+Vacuna* buscarNodo(Vacuna* raiz, int id) {
+	if (raiz == nullptr || raiz->ficha.id == id) {
+		return raiz;
+	}
+	if (id < raiz->ficha.id) {
+		return buscarNodo(raiz->izq, id);
+	}
+	return buscarNodo(raiz->der, id);
+}
+
+void mostrarNodo(Vacuna* nodo, int x, int y) {
+	if (nodo == nullptr) return;
+
+	gotoxy(x, y); cout << "---------------------------";
+	gotoxy(x, y + 1); cout << "ID: " << nodo->ficha.id;
+	gotoxy(x, y + 2); cout << nodo->ficha.nombreVacSig;
+	gotoxy(x, y + 3); cout << nodo->ficha.fechaVacSig;
+	gotoxy(x, y + 4); cout << "Direccion: " << nodo;
+	gotoxy(x, y + 5); cout << "---------------------------";
+}
+
+void mostrarArbol(Vacuna* raiz) {
+	// Cambiar el fondo a blanco y las letras a negro
+	cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+
+	system("cls");
+	TituloVerABB();
+
+	if (!raiz) {
+		gotoxy(55, 6); cout << "Arbol vacio.";
+		cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0); // Restaurar colores originales
+		return;
+	}
+
+	// Nivel 1: raíz
+	mostrarNodo(raiz, 45, 5);
+
+	// Nivel 2: hijos directos de la raíz
+	if (raiz->izq) {
+		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Café con fondo blanco
+		gotoxy(45, 11); cout << "/";
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Negro con fondo blanco
+		mostrarNodo(raiz->izq, 20, 13);
+	}
+	if (raiz->der) {
+		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Café con fondo blanco
+		gotoxy(69, 11); cout << "\\";
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Negro con fondo blanco
+		mostrarNodo(raiz->der, 70, 13);
+	}
+
+	// Nivel 3: nietos (hijos de los hijos)
+	if (raiz->izq && raiz->izq->izq) {
+		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Café con fondo blanco
+		gotoxy(24, 19); cout << "/";
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Negro con fondo blanco
+		mostrarNodo(raiz->izq->izq, 2, 21);
+	}
+	if (raiz->izq && raiz->izq->der) {
+		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Café con fondo blanco
+		gotoxy(42, 19); cout << "\\";
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Negro con fondo blanco
+		mostrarNodo(raiz->izq->der, 32, 21);
+	}
+
+	if (raiz->der && raiz->der->izq) {
+		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Café con fondo blanco
+		gotoxy(75, 19); cout << "/";
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Negro con fondo blanco
+		mostrarNodo(raiz->der->izq, 62, 21);
+	}
+	if (raiz->der && raiz->der->der) {
+		cambiarColorConsola(FOREGROUND_RED | FOREGROUND_GREEN, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Café con fondo blanco
+		gotoxy(92, 19); cout << "\\";
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED); // Negro con fondo blanco
+		mostrarNodo(raiz->der->der, 90, 21);
+	}
+	// Restaurar colores originales
+	cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
+}
+
+Vacuna* eliminarNodo(Vacuna* raiz, int id, bool usarMinimoDerecha) {
+	if (raiz == nullptr) return raiz;
+
+	if (id < raiz->ficha.id) {
+		raiz->izq = eliminarNodo(raiz->izq, id, usarMinimoDerecha);
+	}
+	else if (id > raiz->ficha.id) {
+		raiz->der = eliminarNodo(raiz->der, id, usarMinimoDerecha);
+	}
+	else {
+		// Caso 1: nodo hoja
+		if (raiz->izq == nullptr && raiz->der == nullptr) {
+			delete raiz;
+			return nullptr;
+		}
+		// Caso 2: un hijo
+		if (raiz->izq == nullptr) {
+			Vacuna* temp = raiz->der;
+			delete raiz;
+			return temp;
+		}
+		else if (raiz->der == nullptr) {
+			Vacuna* temp = raiz->izq;
+			delete raiz;
+			return temp;
+		}
+		// Caso 3: dos hijos
+		Vacuna* temp;
+		if (usarMinimoDerecha) {
+			temp = nodoMinimo(raiz->der);
+			raiz->ficha = temp->ficha;
+			raiz->der = eliminarNodo(raiz->der, temp->ficha.id, usarMinimoDerecha);
+		}
+		else {
+			temp = nodoMaximo(raiz->izq);
+			raiz->ficha = temp->ficha;
+			raiz->izq = eliminarNodo(raiz->izq, temp->ficha.id, usarMinimoDerecha);
+		}
+	}
+	return raiz;
+}
+
+Vacuna* nodoMinimo(Vacuna* nodo) {
+	while (nodo->izq != nullptr)
+		nodo = nodo->izq;
+	return nodo;
+}
+
+Vacuna* nodoMaximo(Vacuna* nodo) {
+	while (nodo->der != nullptr)
+		nodo = nodo->der;
+	return nodo;
+}
+void eliminarFicha(Vacuna*& arbol) {
+	int idFichaEliminar;
+	char respuesta;
+
+	do {
+		system("cls");
+		TituloEliminarFicha();
+
+		if (arbol == nullptr) {
+			gotoxy(35, 6); cout << "El arbol esta vacio. No hay fichas para eliminar.";
+			gotoxy(35, 8); cout << "Presione una tecla para volver al menu de ABB...";
+			_getch();
+			return;
+		}
+
+		idFichaEliminar = leerEntero("Ingrese el ID de la ficha que desea eliminar: ", 35, 6);
+		Vacuna* nodoEliminar = buscarNodo(arbol, idFichaEliminar); // Usamos buscarNodo
+
+		if (nodoEliminar == nullptr) {
+			gotoxy(35, 8); cout << "No se encontró ninguna ficha con ese ID.";
+		}
+		else {
+			// Mostrar la ficha encontrada
+			gotoxy(35, 8);  cout << "Ficha encontrada:";
+			gotoxy(35, 9);  cout << "ID: " << nodoEliminar->ficha.id;
+			gotoxy(35, 10); cout << "Fecha Vacunacion Actual: " << nodoEliminar->ficha.fechaVacAct;
+			gotoxy(35, 11); cout << "Nombre Vacuna Actual: " << nodoEliminar->ficha.nombreVacAct;
+			gotoxy(35, 12); cout << "Fecha Vacunacion Siguiente: " << nodoEliminar->ficha.fechaVacSig;
+			gotoxy(35, 13); cout << "Nombre Vacuna Siguiente: " << nodoEliminar->ficha.nombreVacSig;
+
+			// Confirmar antes de eliminar
+			char confirmar = leerCaracter("Desea eliminar esta ficha? (S/N): ", "SN", 35, 15);
+			if (confirmar == 'S' || confirmar == 's') {
+				if (nodoEliminar->izq != nullptr && nodoEliminar->der != nullptr) {
+					char opcion;
+					bool opcionValida = false;
+					do {
+						gotoxy(35, 17); cout << "El nodo tiene dos hijos.";
+						gotoxy(35, 18); cout << "Deseas reemplazar con el minimo derecho (D) o maximo izquierdo (I)? ";
+						cin >> opcion;
+						opcion = toupper(opcion);
+
+						if (opcion == 'D' || opcion == 'I') {
+							opcionValida = true;
+						}
+						else {
+							gotoxy(35, 19); cout << "Opcion invalida. Por favor ingresa D o I.               ";
+						}
+					} while (!opcionValida);
+
+					bool usarMinimoDerecha = (opcion == 'D');
+					arbol = eliminarNodo(arbol, idFichaEliminar, usarMinimoDerecha);
+				}
+				else {
+					arbol = eliminarNodo(arbol, idFichaEliminar, true);
+				}
+
+				gotoxy(35, 21); cout << "Ficha eliminada correctamente.";
+				gotoxy(35, 22); cout << "Estructura del ABB actualizada:";
+				mostrarArbol(arbol);
+			}
+			else {
+				gotoxy(35, 17); cout << "Operacion cancelada. No se elimino la ficha.";
+			}
+		}
+
+		if (arbol == nullptr) {
+			gotoxy(35, 24); cout << "El arbol ahora esta vacio. No hay mas fichas para eliminar.";
+			gotoxy(35, 26); cout << "Presione una tecla para volver al menu de ABB...";
+			_getch();
+			break;
+		}
+
+		cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+		respuesta = leerCaracter("Desea eliminar otra ficha? (S/N): ", "SN", 40, 28);
+		cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
+	} while (respuesta == 'S' || respuesta == 's');
+}
+
+void recorrerPreorden(Vacuna* raiz, int x_base, int y_base, int& offset) {
+	if (raiz == nullptr) return;
+
+	// Cambiar color
+	cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+	gotoxy(x_base + offset, y_base);
+	cout << "ID: " << raiz->ficha.id << ", ";
+	offset += 10;
+
+	cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
+
+	recorrerPreorden(raiz->izq, x_base, y_base, offset);
+	recorrerPreorden(raiz->der, x_base, y_base, offset);
+}
+
+void recorrerInorden(Vacuna* raiz, int x_base, int y_base, int& offset) {
+	if (raiz == nullptr) return;
+
+	recorrerInorden(raiz->izq, x_base, y_base, offset);
+
+	cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+	gotoxy(x_base + offset, y_base);
+	cout << "ID: " << raiz->ficha.id << ", ";
+	offset += 10;
+
+	cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
+
+	recorrerInorden(raiz->der, x_base, y_base, offset);
+}
+
+void recorrerPostorden(Vacuna* raiz, int x_base, int y_base, int& offset) {
+	if (raiz == nullptr) return;
+
+	recorrerPostorden(raiz->izq, x_base, y_base, offset);
+	recorrerPostorden(raiz->der, x_base, y_base, offset);
+
+	cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+	gotoxy(x_base + offset, y_base);
+	cout << "ID: " << raiz->ficha.id << ", ";
+	offset += 10;
+
+	cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
+}
+
+// Función para vaciar el árbol completo
+void vaciarArbol(Vacuna*& raiz) {
+	if (raiz == nullptr) return;
+	vaciarArbol(raiz->izq);
+	vaciarArbol(raiz->der);
+	delete raiz;
+	raiz = nullptr;
+}
+
 int leerEntero(string mensaje, int x, int y) {
 	int valor;
 	while (true) {
@@ -3403,6 +3938,54 @@ void TituloVaciarListaProveedores() {
 	gotoxy(35, 4); cout << "***************************************************";
 }
 
+void TituloIngresaFicha() {
+	gotoxy(45, 0); cout << "************************************";
+	gotoxy(45, 1); cout << "**                                **";
+	gotoxy(45, 2); cout << "**    Ingresando ficha al ABB     **";
+	gotoxy(45, 3); cout << "**                                **";
+	gotoxy(45, 4); cout << "************************************";
+}
+
+void TituloVerABB() {
+	gotoxy(45, 0); cout << "******************************";
+	gotoxy(45, 1); cout << "**                          **";
+	gotoxy(45, 2); cout << "**    Visualizando el ABB   **";
+	gotoxy(45, 3); cout << "**                          **";
+	gotoxy(45, 4); cout << "******************************";
+}
+
+void TituloBuscarFicha() {
+	gotoxy(45, 0); cout << "************************************";
+	gotoxy(45, 1); cout << "**                                **";
+	gotoxy(45, 2); cout << "**    Buscando ficha en el ABB    **";
+	gotoxy(45, 3); cout << "**                                **";
+	gotoxy(45, 4); cout << "************************************";
+}
+
+void TituloRecorrerABB() {
+	gotoxy(45, 0); cout << "******************************";
+	gotoxy(45, 1); cout << "**                          **";
+	gotoxy(45, 2); cout << "**    Recorriendo el ABB    **";
+	gotoxy(45, 3); cout << "**                          **";
+	gotoxy(45, 4); cout << "******************************";
+}
+
+void TituloEliminarFicha() {
+	gotoxy(45, 0); cout << "************************************";
+	gotoxy(45, 1); cout << "**                                **";
+	gotoxy(45, 2); cout << "**    Eliminando ficha del ABB    **";
+	gotoxy(45, 3); cout << "**                                **";
+	gotoxy(45, 4); cout << "************************************";
+}
+
+void TituloVaciarABB() {
+	gotoxy(45, 0); cout << "***************************";
+	gotoxy(45, 1); cout << "**                       **";
+	gotoxy(45, 2); cout << "**    Vaciando el ABB    **";
+	gotoxy(45, 3); cout << "**                       **";
+	gotoxy(45, 4); cout << "***************************";
+}
+
 // Función para mover el cursor a una posición específica en la consola
 void gotoxy(int x, int y) {
 	HANDLE hcon;
@@ -3425,4 +4008,9 @@ BOOL WINAPI ConsoleHandler(DWORD event) {
 	default:
 		return FALSE;
 	}
+}
+
+void cambiarColorConsola(WORD texto, WORD fondo) {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(hConsole, texto | fondo);
 }
