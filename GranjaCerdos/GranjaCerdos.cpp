@@ -120,6 +120,21 @@ struct Vacuna {
 	Vacuna* der;
 };
 
+// Estructura para el corral (AVL)
+struct NodoAVL {
+	int id;             // ID único del corral
+	float peso;         // Peso promedio de los cerdos del corral
+	string raza;        // Raza de los cerdos del corral
+	int edad;           // Edad en meses de los cerdos del corral
+	int altura;         // Altura del nodo en el árbol AVL (para balanceo)
+	NodoAVL* izq;       // Hijo izquierdo
+	NodoAVL* der;       // Hijo derecho
+
+	NodoAVL(int _id, float _peso, string _raza, int _edad)
+		: id(_id), peso(_peso), raza(_raza), edad(_edad), altura(1), izq(nullptr), der(nullptr) {
+	}
+};
+
 void umg();
 void Integrantes();
 void PantallaLogo();
@@ -224,6 +239,38 @@ Vacuna* nodoMaximo(Vacuna* nodo);
 Vacuna* eliminarNodo(Vacuna* raiz, int id, bool usarMinimoDerecha = true);
 void eliminarFicha(Vacuna*& arbol);
 void vaciarArbol(Vacuna*& raiz);
+// Prototipos para el manejo de funciones del AVL
+int MenuAVL(const char* tituloMenuAVL, const char* opcionesMenuAVL[], int nOpcionesMenuAVL);
+void TituloIngresaCorralAVL();
+void TituloVerAVL();
+void TituloBuscarCorralAVL();
+void TituloEliminarCorralAVL();
+void TituloRecorrerAVL();
+void TituloVaciarAVL();
+// Creación e inserción
+NodoAVL* crearNodoAVL(int id, float peso, string raza, int edad);
+NodoAVL* insertarNodoAVL(NodoAVL* raiz, int id, float peso, string raza, int edad);
+// Búsqueda y mínimos/máximos
+NodoAVL* buscarNodoAVL(NodoAVL* raiz, int id);
+NodoAVL* nodoMinimoAVL(NodoAVL* nodo);
+NodoAVL* nodoMaximoAVL(NodoAVL* nodo);
+// Eliminación
+NodoAVL* eliminarNodoAVL(NodoAVL* raiz, int id);
+void eliminarCorralAVL(NodoAVL*& arbol);
+void vaciarArbolAVL(NodoAVL*& raiz);
+// Visualización y recorrido
+void mostrarNodoAVL(NodoAVL* nodo, int x, int y);
+void mostrarArbolAVL(NodoAVL* raiz, int x = 53, int y = 6, int espacioBase = 30);
+// Recorridos (puedes usar los parámetros que prefieras)
+void recorrerPreordenAVL(NodoAVL* raiz, bool& primero);
+void recorrerInordenAVL(NodoAVL* raiz, bool& primero);
+void recorrerPostordenAVL(NodoAVL* raiz, bool& primero);
+// Balanceo y utilidades internas
+int altura(NodoAVL* nodo);
+int balance(NodoAVL* nodo);
+void actualizarAltura(NodoAVL* nodo);
+NodoAVL* rotarDerecha(NodoAVL* y);
+NodoAVL* rotarIzquierda(NodoAVL* x);
 // Funciones extras para el programa
 void gotoxy(int, int);
 int leerEntero(string mensaje, int x, int y);
@@ -236,6 +283,8 @@ BOOL WINAPI ConsoleHandler(DWORD event);	// Prototipo de la función de manejo d
 
 
 ColaEmpleado q = { nullptr, nullptr }; // Inicializar la cola vacía
+
+bool primero = true;	//Para control de comas en recorridos del AVL
 
 int main() {
 	// Registra la función de manejo de eventos de control
@@ -437,12 +486,12 @@ void PantallaLogo() {
 }
 
 void ProgramaPrincipal() {
-	
+
 	system("cls");
 	bool repite = true;
 
 	int opcionMenuPrincipal;
-	int nOpcionesMenuPrincipal = 7;
+	int nOpcionesMenuPrincipal = 8;
 
 	int opcionMenuPila;
 	int nOpcionesMenuPila = 8;
@@ -462,6 +511,9 @@ void ProgramaPrincipal() {
 	int opcionMenuABB;
 	int nOpcionesMenuABB = 8;
 
+	int opcionMenuAVL;
+	int nOpcionesMenuAVL = 8;
+
 	const char* tituloMenuPrincipal = "Menu Principal de la Granja";
 	const char* opcionesMenuPrincipal[] = {
 		"Gestionar Informacion de los cerdos (Pila)",
@@ -470,6 +522,7 @@ void ProgramaPrincipal() {
 		"Gestionar Informacion de los Productos (Lista doble)",
 		"Gestionar Informacion de los proveedores (Lista circular)",
 		"Gestionar Informacion de la vacunacion de cerdos (ABB)",
+		"Gestionar Informacion de corrales de cerdos (AVL)",
 		"Salir del programa"
 	};
 
@@ -545,6 +598,18 @@ void ProgramaPrincipal() {
 		"Salir del programa"
 	};
 
+	const char* tituloMenuAVL = "Gestionar Peso de cerdos (AVL)";
+	const char* opcionesMenuAVL[] = {
+		"Ingresar corral a la estructura",
+		"Ver AVL de corrales",
+		"Buscar corral",
+		"Recorrer AVL de corrales",
+		"Eliminar corral",
+		"Vaciar AVL",
+		"Regresar al menu principal",
+		"Salir del programa"
+	};
+
 	Cerdo* pila = NULL;
 	int arete = 0;
 	int modulo = 0;
@@ -596,8 +661,11 @@ void ProgramaPrincipal() {
 	int idFichaBuscar = 0;
 	int idFichaEliminar = 0;
 	int x = 35;
-	int y = 31; 
+	int y = 31;
 	int offset = 0;
+
+	// Variables para el AVL
+	NodoAVL* avlCorrales = nullptr;
 
 	do {
 		system("color 1F");  // Fondo azul, letra blanca brillante
@@ -753,9 +821,9 @@ void ProgramaPrincipal() {
 				switch (opcionMenuLista)
 				{
 				case 1:
-						system("cls");
-						TituloIngresaComprador();
-						gestionarIngresoCompradores(compradores);
+					system("cls");
+					TituloIngresaComprador();
+					gestionarIngresoCompradores(compradores);
 					break;
 				case 2:
 					system("cls");
@@ -1006,175 +1074,408 @@ void ProgramaPrincipal() {
 				}
 			} while (opcionMenuListaCircular != 7 && repite);
 			break;
-			case 6:
-				do {
-					system("color 4F");  // Fondo rojo, letra blanca brillante
-					opcionMenuABB = MenuABB(tituloMenuABB, opcionesMenuABB, nOpcionesMenuABB);
-					switch (opcionMenuABB) {
-					case 1: // Insertar ficha de vacunación
-						do {
-							system("cls"); 
-							TituloIngresaFicha(); 
-							gotoxy(35, 6); cout << "-------------------------------------------------------";
-
-							fichaActual.id = leerEntero("Ingrese el ID de la ficha: ", 35, 7);
-							fichaActual.fechaVacAct = leerCadena("Ingrese la fecha de la vacuna actual (dd/mm/aa): ", 35, 8);
-							fichaActual.nombreVacAct = leerCadena("Ingrese el nombre de la vacuna actual: ", 35, 9);
-							fichaActual.fechaVacSig = leerCadena("Ingrese la fecha de la proxima vacuna (dd/mm/aa): ", 35, 10);
-							fichaActual.nombreVacSig = leerCadena("Ingrese el nombre de la proxima vacuna: ", 35, 11);
-
-
-							gotoxy(35, 12); cout << "-------------------------------------------------------";
-
-							// Inserta la ficha de vacunación en el árbol binario de búsqueda (ABB).
-							arbol = insertarNodo(arbol, fichaActual);
-
-							gotoxy(40, 14); cout << "Ficha de vacunacion insertada correctamente.";
-
-							// Pregunta al usuario si desea ingresar otra ficha de vacunación.
-							rpt = leerCaracter("Desea ingresar otra ficha de vacunacion? (S/N): ", "SN", 40, 16);
-
-						} while (rpt == 'S' || rpt == 's'); // Repite el proceso si el usuario responde 'S' o 's'.
-
-						system("cls"); 
-						TituloVerABB(); 
-						mostrarArbol(arbol); 
-						_getch(); 
-						break;
-					case 2: // Buscar ficha de vacunación
-						do {
-							system("cls"); // Limpia la pantalla para iniciar la búsqueda
-							TituloBuscarFicha(); // Muestra el título de la sección de búsqueda
-
-							// Verifica que el árbol no esté vacío
-							if (arbol == nullptr) {
-								gotoxy(35, 6); cout << "El arbol esta vacio. No hay fichas registradas para buscar.";
-								gotoxy(40, 8); cout << "Presione una tecla para volver al menu de ABB...";
-								_getch();
-								break;
-							}
-
-							// Se solicita al usuario el ID de la ficha a buscar
-							idFichaBuscar = leerEntero("Ingrese el ID de la ficha que desea buscar: ", 45, 6);
-
-							// Se busca el nodo en el árbol utilizando el ID
-							Vacuna* fichaEncontrada = buscarNodo(arbol, idFichaBuscar);
-							if (fichaEncontrada) {
-								// Si se encuentra la ficha, se muestran sus datos
-								gotoxy(45, 8); cout << "Ficha encontrada:";
-								gotoxy(40, 10); cout << "-----------------------------------------";
-								gotoxy(40, 11); cout << "ID: " << fichaEncontrada->ficha.id;
-								gotoxy(40, 12); cout << "Fecha Vacuna Actual: " << fichaEncontrada->ficha.fechaVacAct;
-								gotoxy(40, 13); cout << "Nombre Vacuna Actual: " << fichaEncontrada->ficha.nombreVacAct;
-								gotoxy(40, 14); cout << "Fecha Proxima Vacuna: " << fichaEncontrada->ficha.fechaVacSig;
-								gotoxy(40, 15); cout << "Nombre Proxima Vacuna: " << fichaEncontrada->ficha.nombreVacSig;
-								gotoxy(40, 16); cout << "-----------------------------------------";
-							}
-							else {
-								// Si no se encuentra, se informa al usuario
-								gotoxy(40, 8); cout << "No se encontro ninguna ficha con el ID " << idFichaBuscar << ".";
-							}
-
-							// Se pregunta si se desea realizar otra búsqueda
-							rpt = leerCaracter("Desea buscar otra ficha de vacunacion? (S/N): ", "SN", 40, 18);
-						} while (rpt == 'S' || rpt == 's');
-						break;
-
-					case 3: // Ver estructura del ABB
+		case 6:
+			do {
+				system("color 4F");  // Fondo rojo, letra blanca brillante
+				opcionMenuABB = MenuABB(tituloMenuABB, opcionesMenuABB, nOpcionesMenuABB);
+				switch (opcionMenuABB) {
+				case 1: // Insertar ficha de vacunación
+					do {
 						system("cls");
-						TituloVerABB();
-						mostrarArbol(arbol);
+						TituloIngresaFicha();
+						gotoxy(35, 6); cout << "-------------------------------------------------------";
 
-						// Cambiar el color a texto negro y fondo blanco
-						cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
-						gotoxy(45, 28); cout << "Presione una tecla para volver al menu de ABB";
+						fichaActual.id = leerEntero("Ingrese el ID de la ficha: ", 35, 7);
+						fichaActual.fechaVacAct = leerCadena("Ingrese la fecha de la vacuna actual (dd/mm/aa): ", 35, 8);
+						fichaActual.nombreVacAct = leerCadena("Ingrese el nombre de la vacuna actual: ", 35, 9);							fichaActual.fechaVacSig = leerCadena("Ingrese la fecha de la proxima vacuna (dd/mm/aa): ", 35, 10);
+						fichaActual.nombreVacSig = leerCadena("Ingrese el nombre de la proxima vacuna: ", 35, 11);
 
-						// Restaurar colores originales
-						cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
-						_getch();
-						break;
+						gotoxy(35, 12); cout << "-------------------------------------------------------";
 
-					case 4: // Recorrer la estructura del ABB
-						system("cls");
-						TituloRecorrerABB();
+						// Inserta la ficha de vacunación en el árbol binario de búsqueda (ABB).
+						arbol = insertarNodo(arbol, fichaActual);
+
+						gotoxy(40, 14); cout << "Ficha de vacunacion insertada correctamente.";
+
+						// Pregunta al usuario si desea ingresar otra ficha de vacunación.
+						rpt = leerCaracter("Desea ingresar otra ficha de vacunacion? (S/N): ", "SN", 40, 16);
+
+					} while (rpt == 'S' || rpt == 's'); // Repite el proceso si el usuario responde 'S' o 's'.
+
+					system("cls");
+					TituloVerABB();
+					mostrarArbol(arbol);
+					_getch();
+					break;
+				case 2: // Buscar ficha de vacunación
+					do {
+						system("cls"); // Limpia la pantalla para iniciar la búsqueda
+						TituloBuscarFicha(); // Muestra el título de la sección de búsqueda
+
+						// Verifica que el árbol no esté vacío
 						if (arbol == nullptr) {
-							gotoxy(40, 6); cout << "El arbol esta vacio. No hay arbol para recorrer.";
-
-							cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
-							gotoxy(40, 8); cout << "Presione una tecla para volver al menu de ABB...";
-							cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
-							_getch();
-							break;
-						}
-
-						mostrarArbol(arbol);
-						cout << endl;
-						cout << endl;
-						cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
-						gotoxy(25, 30); cout << "Recorrido Preorden: ";
-						// Recorrido Inorden
-						offset = 0;
-						recorrerPreorden(arbol, 35, 31, offset);
-
-						cout << endl;
-						x = 35, y = 32;
-						cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
-						gotoxy(25, 31); cout << "Recorrido Inorden: ";
-						// Recorrido Inorden
-						offset = 0;
-						recorrerInorden(arbol, 35, 32, offset);
-
-						cout << endl;
-						x = 35, y = 33;
-						cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
-						gotoxy(25, 32); cout << "Recorrido Postorden: ";
-						// Recorrido Postorden
-						offset = 0;
-						recorrerPostorden(arbol, 35, 33, offset);
-
-						cout << endl;
-						cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
-						gotoxy(45, 34); cout << "\t\t\t\t\tPresione una tecla para volver al menu de ABB";
-						cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
-						_getch();
-						break;
-					case 5: // Eliminar ficha de la estructura
-							eliminarFicha(arbol);
-						break;
-					case 6: // Vaciar la estructura
-						system("cls");
-						TituloVaciarABB();
-
-						if (arbol == nullptr) {
-							gotoxy(30, 6); cout << "El arbol no tiene elementos ingresados, por lo tanto ya estaba vacio.";
+							gotoxy(35, 6); cout << "El arbol esta vacio. No hay fichas registradas para buscar.";
 							gotoxy(40, 8); cout << "Presione una tecla para volver al menu de ABB...";
 							_getch();
 							break;
 						}
 
-						rpt = leerCaracter("Est seguro de que desea vaciar el arbol? (S/N): ", "SN", 35, 6);
+						// Se solicita al usuario el ID de la ficha a buscar
+						idFichaBuscar = leerEntero("Ingrese el ID de la ficha que desea buscar: ", 45, 6);
 
-						if (rpt == 'S' || rpt == 's') {
-							vaciarArbol(arbol);
-							gotoxy(35, 8); cout << "El ABB ha sido vaciado correctamente.";
+						// Se busca el nodo en el árbol utilizando el ID
+						Vacuna* fichaEncontrada = buscarNodo(arbol, idFichaBuscar);
+						if (fichaEncontrada) {
+							// Si se encuentra la ficha, se muestran sus datos
+							gotoxy(45, 8); cout << "Ficha encontrada:";
+							gotoxy(40, 10); cout << "-----------------------------------------";
+							gotoxy(40, 11); cout << "ID: " << fichaEncontrada->ficha.id;
+							gotoxy(40, 12); cout << "Fecha Vacuna Actual: " << fichaEncontrada->ficha.fechaVacAct;
+							gotoxy(40, 13); cout << "Nombre Vacuna Actual: " << fichaEncontrada->ficha.nombreVacAct;
+							gotoxy(40, 14); cout << "Fecha Proxima Vacuna: " << fichaEncontrada->ficha.fechaVacSig;
+							gotoxy(40, 15); cout << "Nombre Proxima Vacuna: " << fichaEncontrada->ficha.nombreVacSig;
+							gotoxy(40, 16); cout << "-----------------------------------------";
 						}
 						else {
-							gotoxy(35, 8); cout << "Operacion cancelada. El arbol no fue vaciado.";
+							// Si no se encuentra, se informa al usuario
+							gotoxy(40, 8); cout << "No se encontro ninguna ficha con el ID " << idFichaBuscar << ".";
 						}
 
-						gotoxy(40, 10); cout << "Presione una tecla para volver al menu de ABB...";
+						// Se pregunta si se desea realizar otra búsqueda
+						rpt = leerCaracter("Desea buscar otra ficha de vacunacion? (S/N): ", "SN", 40, 18);
+					} while (rpt == 'S' || rpt == 's');
+					break;
+
+				case 3: // Ver estructura del ABB
+					system("cls");
+					TituloVerABB();
+					mostrarArbol(arbol);
+
+					// Cambiar el color a texto negro y fondo blanco
+					cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+					gotoxy(45, 28); cout << "Presione una tecla para volver al menu de ABB";
+
+					// Restaurar colores originales
+					cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
+					_getch();
+					break;
+
+				case 4: // Recorrer la estructura del ABB
+					system("cls");
+					TituloRecorrerABB();
+					if (arbol == nullptr) {
+						gotoxy(40, 6); cout << "El arbol esta vacio. No hay arbol para recorrer.";
+
+						cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+						gotoxy(40, 8); cout << "Presione una tecla para volver al menu de ABB...";
+						cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
 						_getch();
 						break;
-					case 7: // Regresar al menú principal
-						break;
+					}
 
-					case 8: // Salir del programa
-						repite = false;
+					mostrarArbol(arbol);
+					cout << endl;
+					cout << endl;
+					cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+					gotoxy(25, 30); cout << "Recorrido Preorden: ";
+					// Recorrido Inorden
+					offset = 0;
+					recorrerPreorden(arbol, 35, 31, offset);
+
+					cout << endl;
+					x = 35, y = 32;
+					cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+					gotoxy(25, 31); cout << "Recorrido Inorden: ";
+					// Recorrido Inorden
+					offset = 0;
+					recorrerInorden(arbol, 35, 32, offset);
+
+					cout << endl;
+					x = 35, y = 33;
+					cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+					gotoxy(25, 32); cout << "Recorrido Postorden: ";
+					// Recorrido Postorden
+					offset = 0;
+					recorrerPostorden(arbol, 35, 33, offset);
+
+					cout << endl;
+					cambiarColorConsola(FOREGROUND_INTENSITY, BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED);
+					gotoxy(45, 34); cout << "\t\t\t\t\tPresione una tecla para volver al menu de ABB";
+					cambiarColorConsola(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED, 0);
+					_getch();
+					break;
+				case 5: // Eliminar ficha de la estructura
+					eliminarFicha(arbol);
+					break;
+				case 6: // Vaciar la estructura
+					system("cls");
+					TituloVaciarABB();
+
+					if (arbol == nullptr) {
+						gotoxy(30, 6); cout << "El arbol no tiene elementos ingresados, por lo tanto ya estaba vacio.";
+						gotoxy(40, 8); cout << "Presione una tecla para volver al menu de ABB...";
+						_getch();
 						break;
 					}
-				} while (opcionMenuABB != 7 && repite);
-				break;
+
+					rpt = leerCaracter("Est seguro de que desea vaciar el arbol? (S/N): ", "SN", 35, 6);
+
+					if (rpt == 'S' || rpt == 's') {
+						vaciarArbol(arbol);
+						gotoxy(35, 8); cout << "El ABB ha sido vaciado correctamente.";
+					}
+					else {
+						gotoxy(35, 8); cout << "Operacion cancelada. El arbol no fue vaciado.";
+					}
+
+					gotoxy(40, 10); cout << "Presione una tecla para volver al menu de ABB...";
+					_getch();
+					break;
+				case 7: // Regresar al menú principal
+					break;
+
+				case 8: // Salir del programa
+					repite = false;
+					break;
+				}
+			} while (opcionMenuABB != 7 && repite);
+			break;
 		case 7:
+			do {
+				system("color 4F");  // Fondo rojo, letra blanca brillante
+				opcionMenuAVL = MenuAVL(tituloMenuAVL, opcionesMenuAVL, nOpcionesMenuAVL);
+				switch (opcionMenuAVL) {
+				case 1: { // Insertar corral al AVL
+					do {
+						system("cls");
+						TituloIngresaCorralAVL();
+
+						// Solicita al usuario los datos del nuevo corral
+						int id = leerEntero("Ingrese el ID del corral: ", 40, 7); // ID único del corral
+						float peso = leerDecimal("Ingrese el peso promedio (kg): ", 40, 8); // Peso promedio de los cerdos
+						string raza = leerCadena("Ingrese la raza: ", 40, 9); // Raza de los cerdos del corral
+						int edad = leerEntero("Ingrese la edad (meses): ", 40, 10); // Edad promedio de los cerdos
+
+						// Inserta el nuevo corral en el árbol AVL, manteniendo el balance
+						avlCorrales = insertarNodoAVL(avlCorrales, id, peso, raza, edad);
+
+						gotoxy(40, 12); cout << "Corral insertado correctamente.";
+
+						// Pregunta si se desea ingresar otro corral
+						rpt = leerCaracter("Desea ingresar otro corral? (S/N): ", "SN", 40, 14);
+
+					} while (rpt == 'S' || rpt == 's'); // Permite múltiples inserciones si el usuario lo desea
+
+					system("cls");
+					TituloVerAVL();
+					mostrarArbolAVL(avlCorrales); // Muestra gráficamente el árbol AVL actualizado
+					cout << endl << endl;
+					cout << "\t\t\t\t\t\tPresione una tecla para volver...";
+					_getch();
+					break;
+				}
+
+				case 2: // Ver AVL completo
+					system("cls");
+					TituloVerAVL();
+
+					// Verifica si el árbol AVL de corrales está vacío
+					if (!avlCorrales) {
+						gotoxy(50, 8); cout << "El AVL esta vacio.";
+					}
+					else {
+						mostrarArbolAVL(avlCorrales); // Esta función recorre el árbol y muestra cada nodo con sus conexiones visuales
+					}
+
+					cout << endl << endl;
+					cout << "\t\t\t\t\t\tPresione una tecla para volver...";
+					_getch();
+					break;
+
+				case 3: { // Buscar corral en el AVL
+					char rpt;
+					do {
+						system("cls");
+						TituloBuscarCorralAVL();
+
+						// Verifica si el árbol AVL está vacío antes de buscar
+						if (!avlCorrales) {
+							gotoxy(50, 8); cout << "El AVL esta vacio.";
+							gotoxy(40, 10); cout << "Presione una tecla para volver...";
+							_getch();
+							break;
+						}
+
+						// Solicita al usuario el ID del corral a buscar
+						int idBuscar = leerEntero("Ingrese el ID del corral a buscar: ", 40, 7);
+
+						// Busca el corral en el árbol AVL usando búsqueda binaria
+						NodoAVL* encontrado = buscarNodoAVL(avlCorrales, idBuscar);
+
+						if (encontrado) {
+							// Si se encuentra el corral, muestra sus datos principales
+							gotoxy(40, 9); cout << "Corral encontrado:";
+							gotoxy(40, 11); cout << "---------------------------";
+							gotoxy(40, 12); cout << "ID: " << encontrado->id;
+							gotoxy(40, 13); cout << "Peso: " << encontrado->peso << "kg";
+							gotoxy(40, 14); cout << "Raza: " << encontrado->raza;
+							gotoxy(40, 15); cout << "Edad: " << encontrado->edad;
+							gotoxy(40, 16); cout << "Direccion: " << encontrado;
+							gotoxy(40, 17); cout << "---------------------------";
+						}
+						else {
+							// Si no se encuentra, muestra mensaje de error
+							gotoxy(40, 9); cout << "No se encontro el corral con ID " << idBuscar << ".";
+						}
+
+						// Pregunta si se desea buscar otro corral
+						rpt = leerCaracter("Desea buscar otro corral? (S/N): ", "SN", 40, 19);
+
+					} while (rpt == 'S' || rpt == 's'); // Permite realizar varias búsquedas si el usuario lo desea
+					break;
+				}
+				case 4: { // Recorrer la estructura del AVL
+					system("cls");
+					TituloRecorrerAVL();
+
+					// Verifica si el árbol AVL está vacío antes de recorrerlo
+					if (!avlCorrales) {
+						gotoxy(50, 8); cout << "El AVL esta vacio.";
+						gotoxy(40, 10); cout << "Presione una tecla para volver...";
+						_getch();
+						break;
+					}
+
+					mostrarArbolAVL(avlCorrales); // Dibuja el árbol AVL en la consola
+
+					cout << endl << endl << endl;
+
+					// Recorrido Preorden: Raíz, Izquierda, Derecha
+					cout << "\t\t\tRecorrido Preorden:";
+					primero = true; // Reinicia el control de comas
+					recorrerPreordenAVL(avlCorrales, primero);
+
+					cout << endl << endl;
+
+					// Recorrido Inorden: Izquierda, Raíz, Derecha
+					cout << "\t\t\tRecorrido Inorden:";
+					primero = true; // Reinicia el control de comas
+					recorrerInordenAVL(avlCorrales, primero);
+
+					cout << endl << endl;
+
+					// Recorrido Postorden: Izquierda, Derecha, Raíz
+					cout << "\t\t\tRecorrido Postorden:";
+					primero = true; // Reinicia el control de comas
+					recorrerPostordenAVL(avlCorrales, primero);
+
+					cout << endl << endl;
+					cout << "\t\t\t\t\t\tPresione una tecla para volver...";
+					_getch();
+					break;
+				}
+
+				case 5: { // Eliminar corral de AVL
+					do {
+						system("cls");
+						TituloEliminarCorralAVL();
+
+						// Verifica si el árbol AVL está vacío antes de intentar eliminar
+						if (!avlCorrales) {
+							gotoxy(50, 8); cout << "El AVL esta vacio.";
+							gotoxy(40, 10); cout << "Presione una tecla para volver...";
+							_getch();
+							break;
+						}
+
+						// Solicita al usuario el ID del corral a eliminar
+						int idEliminar = leerEntero("Ingrese el ID del corral a eliminar: ", 40, 7);
+
+						// Busca el corral en el árbol AVL
+						NodoAVL* existe = buscarNodoAVL(avlCorrales, idEliminar);
+
+						if (!existe) {
+							// Si no existe, muestra mensaje de error
+							gotoxy(40, 9); cout << "No existe un corral con ese ID.";
+						}
+						else {
+							// Si existe, muestra la información del corral encontrado
+							gotoxy(40, 9);  cout << "Corral encontrado:";
+							gotoxy(40, 11); cout << "----------------------";
+							gotoxy(40, 12); cout << "ID: " << existe->id;
+							gotoxy(40, 13); cout << "Peso: " << existe->peso << "kg";
+							gotoxy(40, 14); cout << "Raza: " << existe->raza;
+							gotoxy(40, 15); cout << "Edad: " << existe->edad;
+							gotoxy(40, 16); cout << "Direccion: " << existe;
+							gotoxy(40, 17); cout << "----------------------";
+
+							// Confirma si el usuario realmente desea eliminar el corral
+							char confirmar = leerCaracter("Desea eliminar este corral? (S/N): ", "SN", 40, 19);
+							if (confirmar == 'S' || confirmar == 's') {
+								// Elimina el nodo del AVL y rebalancea si es necesario
+								avlCorrales = eliminarNodoAVL(avlCorrales, idEliminar);
+								gotoxy(40, 21); cout << "Corral eliminado correctamente.";
+							}
+							else {
+								gotoxy(40, 21); cout << "Operacion cancelada.";
+							}
+						}
+
+						// Si el árbol quedó vacío tras la eliminación, informa y termina el ciclo
+						if (!avlCorrales) {
+							gotoxy(40, 21); cout << "No hay mas corrales en el AVL.";
+							gotoxy(40, 23); cout << "Presione una tecla para volver...";
+							_getch();
+							break;
+						}
+
+						// Pregunta si se desea eliminar otro corral
+						rpt = leerCaracter("Desea eliminar otro corral? (S/N): ", "SN", 40, 23);
+
+					} while (rpt == 'S' || rpt == 's');
+					break;
+				}
+
+				case 6: // Vaciar el AVL
+					system("cls");
+					TituloVaciarAVL();
+
+					// Verifica si el árbol AVL está vacío antes de intentar vaciarlo
+					if (!avlCorrales) {
+						gotoxy(45, 8); cout << "No hay arbol AVL para vaciar aun.";
+					}
+					else {
+						// Muestra gráficamente el árbol AVL actual antes de vaciarlo
+						mostrarArbolAVL(avlCorrales);
+						cout << endl << endl;
+
+						// Solicita confirmación al usuario antes de vaciar el árbol
+						char conf = leerCaracter("\t\t\t\tEstas seguro de vaciar el AVL? (S/N): ", "SN", 40, 35);
+						if (conf == 'S' || conf == 's') {
+							// Llama a la función que elimina todos los nodos del árbol AVL
+							vaciarArbolAVL(avlCorrales);
+							cout << endl << endl;
+							cout << "\t\t\t\t\tAVL vaciado correctamente.";
+						}
+						else {
+							gotoxy(40, 10); cout << "Operación cancelada.";
+						}
+					}
+					cout << endl << endl;
+					cout << "\t\t\t\t\tPresione una tecla para volver...";
+					_getch();
+					break;
+
+				case 7: // Regresar al menú principal
+					break;
+
+				case 8: // Salir del programa
+					repite = false;
+					break;
+				}
+			} while (opcionMenuAVL != 7 && repite);
+			break;
+		case 8:
 			repite = false;
 			break;
 		}
@@ -1202,8 +1503,8 @@ int MenuPrincipal(const char* tituloMenuPrincipal, const char* opcionesMenuPrinc
 			}
 		}
 
-		gotoxy(30, 18); cout << "*************************************************************************" << endl;
-		gotoxy(18, 20); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+		gotoxy(30, 19); cout << "*************************************************************************" << endl;
+		gotoxy(18, 21); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
 
 		tecla = _getch(); // Captura la tecla presionada
 
@@ -1444,6 +1745,42 @@ int MenuABB(const char* tituloMenuABB, const char* opcionesMenuABB[], int nOpcio
 			break;
 		case 80: // Flecha abajo
 			if (opcionSeleccionada < nOpcionesMenuABB) opcionSeleccionada++;
+			break;
+		case 13: // Enter
+			repite = false;
+			break;
+		}
+	} while (repite);
+	return opcionSeleccionada;
+}
+
+int MenuAVL(const char* tituloMenuAVL, const char* opcionesMenuAVL[], int nOpcionesMenuAVL) {
+	int opcionSeleccionada = 1; // Opción inicial
+	int tecla = 0;
+	bool repite = true;
+	do {
+		system("cls");
+		gotoxy(30, 8); cout << "**********************************************************" << endl;
+		gotoxy(30, 9); cout << "***           " << tituloMenuAVL << "           ***" << endl;
+		gotoxy(30, 10); cout << "**********************************************************" << endl;
+		for (int i = 0; i < nOpcionesMenuAVL; i++) {
+			gotoxy(33, 11 + i);
+			if (i + 1 == opcionSeleccionada) {
+				cout << " ==> " << opcionesMenuAVL[i];
+			}
+			else {
+				cout << "     " << opcionesMenuAVL[i];
+			}
+		}
+		gotoxy(30, 19); cout << "**********************************************************" << endl;
+		gotoxy(18, 21); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+		tecla = _getch(); // Captura la tecla presionada
+		switch (tecla) {
+		case 72: // Flecha arriba
+			if (opcionSeleccionada > 1) opcionSeleccionada--;
+			break;
+		case 80: // Flecha abajo
+			if (opcionSeleccionada < nOpcionesMenuAVL) opcionSeleccionada++;
 			break;
 		case 13: // Enter
 			repite = false;
@@ -2038,7 +2375,7 @@ void eliminarEmpleado(ColaEmpleado& q) {
 			TituloEliminaTrabajador();
 			gotoxy(50, 24); cout << "Operacion cancelada.";
 		}
-		 
+
 		// Mostrar la cola actualizada después de eliminar
 		mostrarColaEmpleados(q);
 
@@ -3547,8 +3884,8 @@ void eliminarFicha(Vacuna*& arbol) {
 
 	// Ciclo para permitir múltiples eliminaciones si el usuario lo desea.
 	do {
-		system("cls"); 
-		TituloEliminarFicha(); 
+		system("cls");
+		TituloEliminarFicha();
 
 		// Si el árbol está vacío, se muestra un mensaje y se retorna.
 		if (arbol == nullptr) {
@@ -3714,6 +4051,316 @@ void vaciarArbol(Vacuna*& raiz) {
 	delete raiz;
 
 	// Se asigna `nullptr` para indicar que el árbol ahora está vacío.
+	raiz = nullptr;
+}
+
+// Funciones para el AVL
+
+// Función para insertar un nuevo nodo en el árbol AVL de corrales
+NodoAVL* insertarNodoAVL(NodoAVL* raiz, int id, float peso, string raza, int edad) {
+
+	// Caso base: si el árbol está vacío, se crea un nuevo nodo y se retorna como raíz
+	if (!raiz) return new NodoAVL(id, peso, raza, edad);
+
+	// Si el ID es menor que el de la raíz, insertar recursivamente en el subárbol izquierdo
+	if (id < raiz->id)
+		raiz->izq = insertarNodoAVL(raiz->izq, id, peso, raza, edad);
+	// Si el ID es mayor, insertar recursivamente en el subárbol derecho
+	else if (id > raiz->id)
+		raiz->der = insertarNodoAVL(raiz->der, id, peso, raza, edad);
+	// Si el ID ya existe, no se permite duplicados y se retorna la raíz sin cambios
+	else
+		return raiz;
+
+	// Actualizar la altura del nodo actual después de la inserción
+	actualizarAltura(raiz);
+
+	// Calcular el factor de balanceo para verificar si el árbol sigue balanceado
+	int bal = balance(raiz);
+
+	// Realizar las rotaciones necesarias según el tipo de desbalance
+
+	// Caso Izquierda-Izquierda (LL)
+	if (bal > 1 && id < raiz->izq->id)
+		return rotarDerecha(raiz);
+
+	// Caso Derecha-Derecha (RR)
+	if (bal < -1 && id > raiz->der->id)
+		return rotarIzquierda(raiz);
+
+	// Caso Izquierda-Derecha (LR)
+	if (bal > 1 && id > raiz->izq->id) {
+		raiz->izq = rotarIzquierda(raiz->izq);
+		return rotarDerecha(raiz);
+	}
+
+	// Caso Derecha-Izquierda (RL)
+	if (bal < -1 && id < raiz->der->id) {
+		raiz->der = rotarDerecha(raiz->der);
+		return rotarIzquierda(raiz);
+	}
+
+	// Si no hay desbalance, retornar la raíz actualizada
+	return raiz;
+}
+
+
+// Devuelve la altura de un nodo en el árbol AVL.
+// Si el nodo es nulo, retorna 0 (un nodo vacío no tiene altura).
+int altura(NodoAVL* nodo) {
+	return nodo ? nodo->altura : 0;
+}
+
+// Calcula el factor de balanceo de un nodo AVL.
+// El balance es la diferencia entre la altura del subárbol izquierdo y derecho.
+// Un valor positivo indica que el subárbol izquierdo es más alto.
+// Un valor negativo indica que el subárbol derecho es más alto.
+// Un valor de 0 indica que ambos subárboles tienen la misma altura.
+int balance(NodoAVL* nodo) {
+	return nodo ? altura(nodo->izq) - altura(nodo->der) : 0;
+}
+
+// Actualiza la altura de un nodo en el árbol AVL.
+// La altura de un nodo es 1 más la altura máxima de sus hijos izquierdo y derecho.
+// Esta función se llama después de insertar, eliminar o rotar nodos para mantener la propiedad AVL.
+void actualizarAltura(NodoAVL* nodo) {
+	if (nodo)
+		nodo->altura = 1 + max(altura(nodo->izq), altura(nodo->der));
+}
+
+// Rotación simple a la derecha (Right Rotation) para balancear el árbol AVL.
+// Se utiliza cuando hay un desbalance hacia la izquierda (caso LL).
+NodoAVL* rotarDerecha(NodoAVL* y) {
+	NodoAVL* x = y->izq;    // x será la nueva raíz del subárbol
+	NodoAVL* T2 = x->der;   // T2 es el subárbol derecho de x, que pasará a ser hijo izquierdo de y
+
+	// Realizar la rotación
+	x->der = y;
+	y->izq = T2;
+
+	// Actualizar alturas de los nodos afectados
+	actualizarAltura(y);
+	actualizarAltura(x);
+
+	// Retornar la nueva raíz del subárbol
+	return x;
+}
+
+// Rotación simple a la izquierda (Left Rotation) para balancear el árbol AVL.
+// Se utiliza cuando hay un desbalance hacia la derecha (caso RR).
+NodoAVL* rotarIzquierda(NodoAVL* x) {
+	NodoAVL* y = x->der;    // y será la nueva raíz del subárbol
+	NodoAVL* T2 = y->izq;   // T2 es el subárbol izquierdo de y, que pasará a ser hijo derecho de x
+
+	// Realizar la rotación
+	y->izq = x;
+	x->der = T2;
+
+	// Actualizar alturas de los nodos afectados
+	actualizarAltura(x);
+	actualizarAltura(y);
+
+	// Retornar la nueva raíz del subárbol
+	return y;
+}
+
+// Función para mostrar la información básica de un nodo de tipo NodoAVL en coordenadas específicas.
+// Esta función se utiliza para visualizar gráficamente cada nodo del árbol AVL en la consola.
+// Recibe el puntero al nodo, y las coordenadas (x, y) donde se debe mostrar la información.
+void mostrarNodoAVL(NodoAVL* nodo, int x, int y) {
+	// Si el nodo es nulo, no se muestra nada.
+	if (nodo == nullptr) return;
+
+	// Imprime un recuadro con los datos principales del corral.
+	gotoxy(x, y);     cout << "---------------";
+	gotoxy(x, y + 1); cout << "ID: " << nodo->id;
+	gotoxy(x, y + 2); cout << "Peso: " << nodo->peso << " kg";
+	gotoxy(x, y + 3); cout << "Edad: " << nodo->edad << " meses";
+	gotoxy(x, y + 4); cout << "---------------";
+}
+
+// Función para mostrar gráficamente el árbol AVL de corrales en la consola.
+// Recorre el árbol en preorden y dibuja cada nodo en una posición específica,
+// mostrando las conexiones entre padres e hijos para visualizar la estructura jerárquica.
+void mostrarArbolAVL(NodoAVL* raiz, int x, int y, int espacio) {
+	// Si el nodo actual es nulo, no hay nada que mostrar.
+	if (!raiz) return;
+
+	// Mostrar la información del nodo actual en la posición (x, y).
+	// Se utiliza la función modular para mostrar los datos del corral.
+	mostrarNodoAVL(raiz, x, y);
+
+	// Si existe hijo izquierdo, dibuja la conexión "/" y muestra el subárbol izquierdo recursivamente.
+	if (raiz->izq) {
+		// Dibuja la línea diagonal hacia el hijo izquierdo.
+		gotoxy((x - espacio / 2) + 9, y + 5); cout << "/";
+		// Llama recursivamente para mostrar el subárbol izquierdo, ajustando la posición y el espacio.
+		mostrarArbolAVL(raiz->izq, x - espacio + 4, y + 6, espacio / 2);
+	}
+
+	// Si existe hijo derecho, dibuja la conexión "\" y muestra el subárbol derecho recursivamente.
+	if (raiz->der) {
+		// Dibuja la línea diagonal hacia el hijo derecho.
+		gotoxy((x + espacio / 2) + 7, y + 5); cout << "\\";
+		// Llama recursivamente para mostrar el subárbol derecho, ajustando la posición y el espacio.
+		mostrarArbolAVL(raiz->der, x + espacio - 4, y + 6, espacio / 2);
+	}
+}
+
+// Función para buscar un nodo en un árbol AVL por su ID.
+// Retorna un puntero al nodo encontrado o nullptr si no existe.
+NodoAVL* buscarNodoAVL(NodoAVL* raiz, int id) {
+	// Caso base: si el árbol está vacío o el nodo actual tiene el ID buscado, retorna el nodo.
+	if (!raiz || raiz->id == id) return raiz;
+
+	// Si el ID buscado es menor que el ID del nodo actual, busca recursivamente en el subárbol izquierdo.
+	if (id < raiz->id) return buscarNodoAVL(raiz->izq, id);
+
+	// Si el ID buscado es mayor, busca recursivamente en el subárbol derecho.
+	return buscarNodoAVL(raiz->der, id);
+}
+
+// Recorre el árbol AVL en preorden (Raíz, Izquierda, Derecha) y muestra los IDs de los nodos.
+// El parámetro 'primero' controla si se imprime una coma antes del ID (para formato de lista).
+void recorrerPreordenAVL(NodoAVL* raiz, bool& primero) {
+	// Si el nodo es nulo, termina la recursión.
+	if (!raiz) return;
+	// Si no es el primer elemento, imprime una coma antes del ID.
+	if (!primero) cout << ", ";
+	// Imprime el ID del nodo actual.
+	cout << "ID: " << raiz->id;
+	// Marca que ya se imprimió el primer elemento.
+	primero = false;
+	// Recorre el subárbol izquierdo.
+	recorrerPreordenAVL(raiz->izq, primero);
+	// Recorre el subárbol derecho.
+	recorrerPreordenAVL(raiz->der, primero);
+}
+
+// Recorre el árbol AVL en inorden (Izquierda, Raíz, Derecha) y muestra los IDs de los nodos.
+// El parámetro 'primero' controla si se imprime una coma antes del ID.
+void recorrerInordenAVL(NodoAVL* raiz, bool& primero) {
+	if (!raiz) return;
+	// Recorre primero el subárbol izquierdo.
+	recorrerInordenAVL(raiz->izq, primero);
+	// Si no es el primer elemento, imprime una coma antes del ID.
+	if (!primero) cout << ", ";
+	// Imprime el ID del nodo actual.
+	cout << "ID: " << raiz->id;
+	primero = false;
+	// Recorre el subárbol derecho.
+	recorrerInordenAVL(raiz->der, primero);
+}
+
+// Recorre el árbol AVL en postorden (Izquierda, Derecha, Raíz) y muestra los IDs de los nodos.
+// El parámetro 'primero' controla si se imprime una coma antes del ID.
+void recorrerPostordenAVL(NodoAVL* raiz, bool& primero) {
+	if (!raiz) return;
+	// Recorre primero el subárbol izquierdo.
+	recorrerPostordenAVL(raiz->izq, primero);
+	// Luego el subárbol derecho.
+	recorrerPostordenAVL(raiz->der, primero);
+	// Si no es el primer elemento, imprime una coma antes del ID.
+	if (!primero) cout << ", ";
+	// Imprime el ID del nodo actual.
+	cout << "ID: " << raiz->id;
+	primero = false;
+}
+
+// Función para encontrar el nodo con el valor mínimo (ID más pequeño) en un árbol AVL.
+// Recorre el subárbol izquierdo hasta llegar al nodo más a la izquierda.
+NodoAVL* nodoMinimoAVL(NodoAVL* nodo) {
+	// Mientras exista un hijo izquierdo, sigue avanzando hacia la izquierda.
+	while (nodo->izq)
+		nodo = nodo->izq;
+	// Cuando ya no hay más hijos izquierdos, retorna el nodo actual (el mínimo).
+	return nodo;
+}
+
+// Función para encontrar el nodo con el valor máximo (ID más grande) en un árbol AVL.
+// Recorre el subárbol derecho hasta llegar al nodo más a la derecha.
+NodoAVL* nodoMaximoAVL(NodoAVL* nodo) {
+	// Mientras exista un hijo derecho, sigue avanzando hacia la derecha.
+	while (nodo->der)
+		nodo = nodo->der;
+	// Cuando ya no hay más hijos derechos, retorna el nodo actual (el máximo).
+	return nodo;
+}
+
+
+// Elimina un nodo con el ID especificado del árbol AVL y mantiene el balance del árbol.
+// Devuelve la nueva raíz del subárbol tras la eliminación.
+NodoAVL* eliminarNodoAVL(NodoAVL* raiz, int id) {
+	// Caso base: si el árbol está vacío, no hay nada que eliminar.
+	if (!raiz) return raiz;
+
+	// Buscar el nodo a eliminar en el subárbol izquierdo.
+	if (id < raiz->id)
+		raiz->izq = eliminarNodoAVL(raiz->izq, id);
+	// Buscar el nodo a eliminar en el subárbol derecho.
+	else if (id > raiz->id)
+		raiz->der = eliminarNodoAVL(raiz->der, id);
+	else {
+		// Nodo encontrado: hay tres casos posibles.
+
+		// Caso 1: El nodo tiene cero o un hijo.
+		if (!raiz->izq || !raiz->der) {
+			NodoAVL* temp = raiz->izq ? raiz->izq : raiz->der; // Hijo no nulo o nullptr.
+			delete raiz; // Liberar memoria del nodo actual.
+			return temp; // Retornar el hijo (o nullptr si no tiene hijos).
+		}
+		// Caso 2: El nodo tiene dos hijos.
+		// Se busca el nodo con el valor máximo en el subárbol izquierdo (predecesor).
+		NodoAVL* temp = nodoMaximoAVL(raiz->izq);
+		// Copiar los datos del predecesor al nodo actual.
+		raiz->id = temp->id;
+		raiz->peso = temp->peso;
+		raiz->raza = temp->raza;
+		raiz->edad = temp->edad;
+		// Eliminar el predecesor en el subárbol izquierdo.
+		raiz->izq = eliminarNodoAVL(raiz->izq, temp->id);
+	}
+
+	// Actualizar la altura del nodo actual.
+	actualizarAltura(raiz);
+	// Calcular el factor de balanceo.
+	int bal = balance(raiz);
+
+	// Realizar rotaciones si el árbol está desbalanceado.
+
+	// Caso Izquierda-Izquierda (LL)
+	if (bal > 1 && balance(raiz->izq) >= 0)
+		return rotarDerecha(raiz);
+	// Caso Izquierda-Derecha (LR)
+	if (bal > 1 && balance(raiz->izq) < 0) {
+		raiz->izq = rotarIzquierda(raiz->izq);
+		return rotarDerecha(raiz);
+	}
+	// Caso Derecha-Derecha (RR)
+	if (bal < -1 && balance(raiz->der) <= 0)
+		return rotarIzquierda(raiz);
+	// Caso Derecha-Izquierda (RL)
+	if (bal < -1 && balance(raiz->der) > 0) {
+		raiz->der = rotarDerecha(raiz->der);
+		return rotarIzquierda(raiz);
+	}
+
+	// Retornar la raíz actualizada.
+	return raiz;
+}
+
+// Elimina todos los nodos del árbol AVL y libera la memoria.
+// Deja el puntero raíz en nullptr.
+void vaciarArbolAVL(NodoAVL*& raiz) {
+	// Si el árbol está vacío, no hay nada que eliminar.
+	if (!raiz) return;
+	// Eliminar recursivamente el subárbol izquierdo.
+	vaciarArbolAVL(raiz->izq);
+	// Eliminar recursivamente el subárbol derecho.
+	vaciarArbolAVL(raiz->der);
+	// Eliminar el nodo actual.
+	delete raiz;
+	// Dejar el puntero en nullptr para indicar que el árbol está vacío.
 	raiz = nullptr;
 }
 
@@ -4095,6 +4742,54 @@ void TituloVaciarABB() {
 	gotoxy(45, 2); cout << "**    Vaciando el ABB    **";
 	gotoxy(45, 3); cout << "**                       **";
 	gotoxy(45, 4); cout << "***************************";
+}
+
+void TituloIngresaCorralAVL() {
+	gotoxy(35, 0); cout << "*************************************";
+	gotoxy(35, 1); cout << "**                                 **";
+	gotoxy(35, 2); cout << "**     Ingresando corral al AVL    **";
+	gotoxy(35, 3); cout << "**                                 **";
+	gotoxy(35, 4); cout << "*************************************";
+}
+
+void TituloVerAVL() {
+	gotoxy(45, 0); cout << "****************************************";
+	gotoxy(45, 1); cout << "**                                    **";
+	gotoxy(45, 2); cout << "**     Viendo el AVL de corrales      **";
+	gotoxy(45, 3); cout << "**                                    **";
+	gotoxy(45, 4); cout << "****************************************";
+}
+
+void TituloBuscarCorralAVL() {
+	gotoxy(45, 0); cout << "***************************************";
+	gotoxy(45, 1); cout << "**                                   **";
+	gotoxy(45, 2); cout << "**     Buscando corral en el AVL     **";
+	gotoxy(45, 3); cout << "**                                   **";
+	gotoxy(45, 4); cout << "***************************************";
+}
+
+void TituloEliminarCorralAVL() {
+	gotoxy(45, 0); cout << "***************************************";
+	gotoxy(45, 1); cout << "**                                   **";
+	gotoxy(45, 2); cout << "**     Eliminando corral del AVL     **";
+	gotoxy(45, 3); cout << "**                                   **";
+	gotoxy(45, 4); cout << "***************************************";
+}
+
+void TituloRecorrerAVL() {
+	gotoxy(45, 0); cout << "******************************************";
+	gotoxy(45, 1); cout << "**                                      **";
+	gotoxy(45, 2); cout << "**     Recorriendo el AVL de corrales   **";
+	gotoxy(45, 3); cout << "**                                      **";
+	gotoxy(45, 4); cout << "******************************************";
+}
+
+void TituloVaciarAVL() {
+	gotoxy(45, 0); cout << "****************************************";
+	gotoxy(45, 1); cout << "**                                    **";
+	gotoxy(45, 2); cout << "**     Vaciando el AVL de corrales    **";
+	gotoxy(45, 3); cout << "**                                    **";
+	gotoxy(45, 4); cout << "****************************************";
 }
 
 // Función para mover el cursor a una posición específica en la consola
