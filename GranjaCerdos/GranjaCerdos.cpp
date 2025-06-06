@@ -1,5 +1,5 @@
 /*
-	Proyecto que gestiona una granja de cerdos con estructuras de datos Pila y Cola
+	Proyecto que gestiona una granja de cerdos con estructuras de datos
 
 	Creadores:
 	Carlos Maldonado 2290-23-6788
@@ -8,13 +8,15 @@
 */
 
 #define NOMINMAX // Desactivar la macro max
+#define ORDEN_B 3 // Grado mínimo t. Máximo de claves = 2*t-1 = 5
 #include <iostream>
 #include <stdlib.h>
 #include <conio.h>
 #include <stdio.h>
 #include <Windows.h>
 #include <string>
-#include <limits> // Incluir la librería <limits>
+#include <sstream>  
+#include <limits> 
 #pragma comment(lib, "winmm.lib")
 
 using namespace std;
@@ -133,6 +135,22 @@ struct NodoAVL {
 	NodoAVL(int _id, float _peso, string _raza, int _edad)
 		: id(_id), peso(_peso), raza(_raza), edad(_edad), altura(1), izq(nullptr), der(nullptr) {
 	}
+};
+
+// Estructura para las fichas de desparasitación de cerdos (B-Arbol)
+struct FichaDesparasitacion {
+	int idCerdo;						// ID de cerdo y a la vez de ficha
+	string fechaDesparasitacion;		// Fecha de ultima desparasitacion realizada al cerdo
+	string nombreProducto;				// Nombre del desparasitante aplicado la ultima vez al cerdo
+	string fechaProximaDesparasitacion;	// Proxima fecha de desparasitacion del cerdo
+	string nombreProximoProducto;		// Nombre del proximo desparasitante a aplicar al cerdo
+};
+
+struct NodoB {
+	int n; // Número de claves actuales
+	bool hoja;
+	FichaDesparasitacion claves[2 * ORDEN_B - 1];
+	NodoB* hijos[2 * ORDEN_B];
 };
 
 void umg();
@@ -271,6 +289,25 @@ int balance(NodoAVL* nodo);
 void actualizarAltura(NodoAVL* nodo);
 NodoAVL* rotarDerecha(NodoAVL* y);
 NodoAVL* rotarIzquierda(NodoAVL* x);
+//Funciones para el B-Arbol
+int MenuArbolB(const char* tituloMenuB, const char* opcionesMenuB[], int nOpcionesMenuB);
+void TituloIngresaFichaB();
+void TituloVerArbolB();
+void TituloBuscarFichaB();
+void TituloEliminarFichaB();
+void TituloRecorrerB();
+void TituloVaciarB();
+NodoB* crearNodoB(bool hoja);
+void insertarB(NodoB*& raiz, FichaDesparasitacion k);
+void insertarNoLlenoB(NodoB* x, FichaDesparasitacion k);
+void dividirHijoB(NodoB* x, int i, NodoB* y);
+FichaDesparasitacion* buscarB(NodoB* x, int id);
+void mostrarArbolB(NodoB* x, int x0, int y0, int espacio);
+void recorrerPreordenB(NodoB* x);
+void recorrerInordenB(NodoB* x);
+void recorrerPostordenB(NodoB* x);
+void eliminarB(NodoB*& raiz, int id);
+void vaciarArbolB(NodoB*& raiz);
 // Funciones extras para el programa
 void gotoxy(int, int);
 int leerEntero(string mensaje, int x, int y);
@@ -278,6 +315,7 @@ double leerDecimal(string mensaje, int x, int y);
 char leerCaracter(string mensaje, string opcionesValidas, int x, int y);
 string leerCadena(string mensaje, int x, int y);
 void borrarLinea(int x, int y);
+string toString(int num);
 void cambiarColorConsola(WORD texto, WORD fondo);
 BOOL WINAPI ConsoleHandler(DWORD event);	// Prototipo de la función de manejo de evententos por si el usuario cierra la consola con la x
 
@@ -491,7 +529,7 @@ void ProgramaPrincipal() {
 	bool repite = true;
 
 	int opcionMenuPrincipal;
-	int nOpcionesMenuPrincipal = 8;
+	int nOpcionesMenuPrincipal = 9;
 
 	int opcionMenuPila;
 	int nOpcionesMenuPila = 8;
@@ -514,6 +552,9 @@ void ProgramaPrincipal() {
 	int opcionMenuAVL;
 	int nOpcionesMenuAVL = 8;
 
+	int opcionMenuB;
+	int nOpcionesMenuB = 8;
+
 	const char* tituloMenuPrincipal = "Menu Principal de la Granja";
 	const char* opcionesMenuPrincipal[] = {
 		"Gestionar Informacion de los cerdos (Pila)",
@@ -523,6 +564,7 @@ void ProgramaPrincipal() {
 		"Gestionar Informacion de los proveedores (Lista circular)",
 		"Gestionar Informacion de la vacunacion de cerdos (ABB)",
 		"Gestionar Informacion de corrales de cerdos (AVL)",
+		"Gestionar Informacion de desparasitacion (Arbol B)",
 		"Salir del programa"
 	};
 
@@ -610,6 +652,18 @@ void ProgramaPrincipal() {
 		"Salir del programa"
 	};
 
+	const char* tituloMenuB = "Gestionar desparasitacion de cerdos (Arbol B)";
+	const char* opcionesMenuB[] = {
+		"Ingresar ficha de desparasitacion",
+		"Buscar ficha de desparasitacion",
+		"Ver estructura de desparasitacion",
+		"Recorrer la estructura de desparasitacion (Pre, In, Post)",
+		"Eliminar ficha de la estructura",
+		"Vaciar la estructura",
+		"Regresar al menu principal",
+		"Salir del programa"
+	};
+
 	Cerdo* pila = NULL;
 	int arete = 0;
 	int modulo = 0;
@@ -666,6 +720,9 @@ void ProgramaPrincipal() {
 
 	// Variables para el AVL
 	NodoAVL* avlCorrales = nullptr;
+
+	// Variables para el B-arbol
+	NodoB* raizB = nullptr;
 
 	do {
 		system("color 1F");  // Fondo azul, letra blanca brillante
@@ -1476,6 +1533,182 @@ void ProgramaPrincipal() {
 			} while (opcionMenuAVL != 7 && repite);
 			break;
 		case 8:
+			// Declarar la raíz del árbol B fuera del ciclo si no lo has hecho
+			// NodoB* raizB = nullptr; // Ya debe estar declarada arriba
+
+			do {
+				system("color 4F");  // Fondo rojo, letra blanca brillante
+				opcionMenuB = MenuArbolB(tituloMenuB, opcionesMenuB, nOpcionesMenuB);
+				switch (opcionMenuB) {
+				case 1: { // Insertar ficha de desparasitación en el árbol B
+					char rpt;
+					do {
+						system("cls");
+						TituloIngresaFichaB();
+						FichaDesparasitacion ficha;
+						gotoxy(45, 6); cout << "------------------------------------";
+						ficha.idCerdo = leerEntero("ID del cerdo: ", 45, 7);
+						ficha.fechaDesparasitacion = leerCadena("Fecha de desparasitacion (dd/mm/aa): ", 45, 8);
+						ficha.nombreProducto = leerCadena("Nombre del producto: ", 45, 9);
+						ficha.fechaProximaDesparasitacion = leerCadena("Proxima fecha de desparasitacion (dd/mm/aa): ", 45, 10);
+						ficha.nombreProximoProducto = leerCadena("Proximo producto: ", 45, 11);
+						gotoxy(45, 12); cout << "-----------------------------------";
+						insertarB(raizB, ficha);
+						gotoxy(45, 14); cout << "Ficha insertada correctamente.";
+						rpt = leerCaracter("Desea ingresar otra ficha? (S/N): ", "SN", 45, 16);
+					} while (rpt == 'S' || rpt == 's');
+					system("cls");
+					TituloVerArbolB();
+					mostrarArbolB(raizB, 50, 8, 20);
+					cout << endl << endl;
+					cout << "\t\t\t\t\t\tPresione una tecla para continuar...";
+					_getch();
+					break;
+				}
+				case 2: { // Buscar ficha de desparasitación
+					char rpt;
+					do {
+						system("cls");
+						TituloBuscarFichaB();
+						if (!raizB) {
+							gotoxy(45, 6); cout << "El arbol B esta vacio.";
+							gotoxy(45, 8); cout << "Presione una tecla para volver...";
+							_getch();
+							break;
+						}
+						int idBuscar = leerEntero("Ingrese el ID del cerdo a buscar: ", 40, 7);
+						FichaDesparasitacion* ficha = buscarB(raizB, idBuscar);
+						if (ficha) {
+							gotoxy(40, 9); cout << "Ficha encontrada:";
+							gotoxy(40, 11); cout << "-----------------------------------------";
+							gotoxy(40, 12); cout << "ID: " << ficha->idCerdo;
+							gotoxy(40, 13); cout << "Fecha desparasitacion: " << ficha->fechaDesparasitacion;
+							gotoxy(40, 14); cout << "Producto: " << ficha->nombreProducto;
+							gotoxy(40, 15); cout << "Proxima fecha: " << ficha->fechaProximaDesparasitacion;
+							gotoxy(40, 16); cout << "Proximo producto: " << ficha->nombreProximoProducto;
+							gotoxy(40, 17); cout << "Direccion: " << ficha;
+							gotoxy(40, 18); cout << "-----------------------------------------";
+						}
+						else {
+							gotoxy(40, 9); cout << "No se encontro ficha con ese ID.";
+						}
+						rpt = leerCaracter("Desea buscar otra ficha? (S/N): ", "SN", 40, 20);
+					} while (rpt == 'S' || rpt == 's');
+					break;
+				}
+				case 3: // Ver estructura del árbol B
+					system("cls");
+					TituloVerArbolB();
+					if (!raizB) {
+						gotoxy(50, 8); cout << "El arbol B esta vacio.";
+					}
+					else {
+						mostrarArbolB(raizB, 50, 8, 20);
+					}
+					cout << endl << endl;
+					cout << "\t\t\t\t\tPresione una tecla para volver...";
+					_getch();
+					break;
+				case 4: { // Recorrer la estructura del árbol B
+					system("cls");
+					TituloRecorrerB();
+					if (!raizB) {
+						gotoxy(50, 8); cout << "El arbol B esta vacio.";
+						gotoxy(40, 10); cout << "Presione una tecla para volver...";
+						_getch();
+						break;
+					}
+					mostrarArbolB(raizB, 50, 8, 20);
+					cout << endl << endl;
+					cout << "\t\t\t\tRecorrido Preorden: ";
+					recorrerPreordenB(raizB);
+					cout << endl;
+					cout << "\t\t\t\tRecorrido Inorden: ";
+					recorrerInordenB(raizB);
+					cout << endl;
+					cout << "\t\t\t\tRecorrido Postorden: ";
+					recorrerPostordenB(raizB);
+					cout << endl << endl;
+					cout << "\t\t\t\tPresione una tecla para continuar...";
+					_getch();
+					break;
+				}
+				case 5: { // Eliminar ficha de la estructura del árbol B
+					char rpt;
+					do {
+						system("cls");
+						TituloEliminarFichaB();
+						if (!raizB) {
+							gotoxy(45, 6); cout << "El arbol B esta vacio.";
+							gotoxy(45, 8); cout << "Presione una tecla para volver...";
+							_getch();
+							break;
+						}
+						int idEliminar = leerEntero("Ingrese el ID de la ficha a eliminar: ", 40, 7);
+						FichaDesparasitacion* ficha = buscarB(raizB, idEliminar);
+						if (!ficha) {
+							gotoxy(40, 9); cout << "No se encontro ficha con ese ID.";
+						}
+						else {
+							gotoxy(50, 9); cout << "Ficha encontrada:";
+							gotoxy(40, 11); cout << "-----------------------------------------";
+							gotoxy(40, 12); cout << "ID: " << ficha->idCerdo;
+							gotoxy(40, 13); cout << "Fecha desparasitacion: " << ficha->fechaDesparasitacion;
+							gotoxy(40, 14); cout << "Producto: " << ficha->nombreProducto;
+							gotoxy(40, 15); cout << "Proxima fecha: " << ficha->fechaProximaDesparasitacion;
+							gotoxy(40, 16); cout << "Proximo producto: " << ficha->nombreProximoProducto;
+							gotoxy(40, 17); cout << "Direccion: " << ficha;
+							gotoxy(40, 18); cout << "-----------------------------------------";
+							char confirmar = leerCaracter("Esta seguro que desea eliminar esta ficha? (S/N): ", "SN", 40, 20);
+							if (confirmar == 'S' || confirmar == 's') {
+								eliminarB(raizB, idEliminar);
+								gotoxy(40, 21); cout << "Ficha eliminada correctamente.";
+							}
+							else {
+								gotoxy(40, 21); cout << "Operacion cancelada. La ficha no fue eliminada.";
+							}
+						}
+						rpt = leerCaracter("Desea eliminar otra ficha? (S/N): ", "SN", 40, 23);
+					} while (rpt == 'S' || rpt == 's');
+					system("cls");
+					TituloEliminarFichaB();
+					gotoxy(50, 7); cout << "Arbol actualizado:";
+					mostrarArbolB(raizB, 50, 8, 20);
+					cout << endl << endl;
+					cout << "\t\t\t\tPresione una tecla para continuar...";
+					_getch();
+					break;
+				}
+				case 6: // Vaciar estructura del árbol B
+					system("cls");
+					TituloVaciarB();
+					if (!raizB) {
+						gotoxy(45, 6); cout << "El arbol B ya esta vacio.";
+					}
+					else {
+						mostrarArbolB(raizB, 50, 8, 20);
+						char conf = leerCaracter("Esta seguro de vaciar el arbol B? (S/N): ", "SN", 40, 23);
+						if (conf == 'S' || conf == 's') {
+							vaciarArbolB(raizB);
+							gotoxy(40, 25); cout << "Arbol B vaciado correctamente.";
+						}
+						else {
+							gotoxy(40, 25); cout << "Operacion cancelada.";
+						}
+					}
+					gotoxy(40, 27); cout << "Presione una tecla para volver...";
+					_getch();
+					break;
+				case 7: // Regresar al menú principal
+					break;
+				case 8: // Salir del programa
+					repite = false;
+					break;
+				}
+			} while (opcionMenuB != 7 && repite);
+			break;
+
+		case 9:
 			repite = false;
 			break;
 		}
@@ -1503,8 +1736,8 @@ int MenuPrincipal(const char* tituloMenuPrincipal, const char* opcionesMenuPrinc
 			}
 		}
 
-		gotoxy(30, 19); cout << "*************************************************************************" << endl;
-		gotoxy(18, 21); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+		gotoxy(30, 20); cout << "*************************************************************************" << endl;
+		gotoxy(18, 22); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
 
 		tecla = _getch(); // Captura la tecla presionada
 
@@ -1522,7 +1755,6 @@ int MenuPrincipal(const char* tituloMenuPrincipal, const char* opcionesMenuPrinc
 	} while (repite);
 
 	return opcionSeleccionada;
-
 }
 
 int MenuPila(const char* tituloMenuPila, const char* opcionesMenuPila[], int nOpcionesMenuPila) {
@@ -1781,6 +2013,42 @@ int MenuAVL(const char* tituloMenuAVL, const char* opcionesMenuAVL[], int nOpcio
 			break;
 		case 80: // Flecha abajo
 			if (opcionSeleccionada < nOpcionesMenuAVL) opcionSeleccionada++;
+			break;
+		case 13: // Enter
+			repite = false;
+			break;
+		}
+	} while (repite);
+	return opcionSeleccionada;
+}
+
+int MenuArbolB(const char* tituloMenuB, const char* opcionesMenuB[], int nOpcionesMenuB) {
+	int opcionSeleccionada = 1; // Opción inicial
+	int tecla = 0;
+	bool repite = true;
+	do {
+		system("cls");
+		gotoxy(30, 8); cout << "**********************************************************" << endl;
+		gotoxy(30, 9); cout << "***    " << tituloMenuB << "   ***" << endl;
+		gotoxy(30, 10); cout << "**********************************************************" << endl;
+		for (int i = 0; i < nOpcionesMenuB; i++) {
+			gotoxy(33, 11 + i);
+			if (i + 1 == opcionSeleccionada) {
+				cout << " ==> " << opcionesMenuB[i];
+			}
+			else {
+				cout << "     " << opcionesMenuB[i];
+			}
+		}
+		gotoxy(30, 19); cout << "**********************************************************" << endl;
+		gotoxy(18, 21); cout << " Use las teclas de direccion (Arriba, Abajo) para navegar y ENTER para seleccionar." << endl;
+		tecla = _getch(); // Captura la tecla presionada
+		switch (tecla) {
+		case 72: // Flecha arriba
+			if (opcionSeleccionada > 1) opcionSeleccionada--;
+			break;
+		case 80: // Flecha abajo
+			if (opcionSeleccionada < nOpcionesMenuB) opcionSeleccionada++;
 			break;
 		case 13: // Enter
 			repite = false;
@@ -4278,7 +4546,7 @@ NodoAVL* nodoMinimoAVL(NodoAVL* nodo) {
 }
 
 // Función para encontrar el nodo con el valor máximo (ID más grande) en un árbol AVL.
-// Recorre el subárbol derecho hasta llegar al nodo más a la derecha.
+// Recorre el subárbol izquierdo hasta llegar al nodo más a la derecha.
 NodoAVL* nodoMaximoAVL(NodoAVL* nodo) {
 	// Mientras exista un hijo derecho, sigue avanzando hacia la derecha.
 	while (nodo->der)
@@ -4362,6 +4630,309 @@ void vaciarArbolAVL(NodoAVL*& raiz) {
 	delete raiz;
 	// Dejar el puntero en nullptr para indicar que el árbol está vacío.
 	raiz = nullptr;
+}
+
+NodoB* crearNodoB(bool hoja) {
+	NodoB* nodo = new NodoB;
+	nodo->hoja = hoja;
+	nodo->n = 0;
+	for (int i = 0; i < 2 * ORDEN_B; i++) nodo->hijos[i] = nullptr;
+	return nodo;
+}
+
+void insertarB(NodoB*& raiz, FichaDesparasitacion k) {
+	if (!raiz) {
+		raiz = crearNodoB(true);
+		raiz->claves[0] = k;
+		raiz->n = 1;
+	}
+	else {
+		if (raiz->n == 2 * ORDEN_B - 1) {
+			NodoB* s = crearNodoB(false);
+			s->hijos[0] = raiz;
+			dividirHijoB(s, 0, raiz);
+			int i = (s->claves[0].idCerdo < k.idCerdo) ? 1 : 0;
+			insertarNoLlenoB(s->hijos[i], k);
+			raiz = s;
+		}
+		else {
+			insertarNoLlenoB(raiz, k);
+		}
+	}
+}
+
+void insertarNoLlenoB(NodoB* x, FichaDesparasitacion k) {
+	int i = x->n - 1;
+	if (x->hoja) {
+		while (i >= 0 && x->claves[i].idCerdo > k.idCerdo) {
+			x->claves[i + 1] = x->claves[i];
+			i--;
+		}
+		x->claves[i + 1] = k;
+		x->n++;
+	}
+	else {
+		while (i >= 0 && x->claves[i].idCerdo > k.idCerdo) i--;
+		i++;
+		if (x->hijos[i]->n == 2 * ORDEN_B - 1) {
+			dividirHijoB(x, i, x->hijos[i]);
+			if (x->claves[i].idCerdo < k.idCerdo) i++;
+		}
+		insertarNoLlenoB(x->hijos[i], k);
+	}
+}
+
+void dividirHijoB(NodoB* x, int i, NodoB* y) {
+	NodoB* z = crearNodoB(y->hoja);
+	z->n = ORDEN_B - 1;
+	for (int j = 0; j < ORDEN_B - 1; j++)
+		z->claves[j] = y->claves[j + ORDEN_B];
+	if (!y->hoja)
+		for (int j = 0; j < ORDEN_B; j++)
+			z->hijos[j] = y->hijos[j + ORDEN_B];
+	y->n = ORDEN_B - 1;
+	for (int j = x->n; j >= i + 1; j--)
+		x->hijos[j + 1] = x->hijos[j];
+	x->hijos[i + 1] = z;
+	for (int j = x->n - 1; j >= i; j--)
+		x->claves[j + 1] = x->claves[j];
+	x->claves[i] = y->claves[ORDEN_B - 1];
+	x->n++;
+}
+
+FichaDesparasitacion* buscarB(NodoB* x, int id) {
+	int i = 0;
+	while (i < x->n && id > x->claves[i].idCerdo) i++;
+	if (i < x->n && x->claves[i].idCerdo == id)
+		return &x->claves[i];
+	if (x->hoja)
+		return nullptr;
+	return buscarB(x->hijos[i], id);
+}
+
+void mostrarArbolB(NodoB* x, int x0, int y0, int espacio) {
+	if (x == nullptr) return;
+
+	// Construir el texto con las claves del nodo
+	string texto = "[";
+	for (int i = 0; i < x->n; i++) {
+		texto += toString(x->claves[i].idCerdo);
+		if (i != x->n - 1)
+			texto += "|";
+	}
+	texto += "]";
+
+	// Mostrar el nodo centrado horizontalmente
+	gotoxy(x0 - texto.length() / 2, y0);
+	cout << texto;
+
+	// Dibujar conexiones y mostrar hijos si no es hoja
+	if (!x->hoja) {
+		int numHijos = x->n + 1;
+		int anchoTotal = espacio * (numHijos - 1);
+		int xInicio = x0 - anchoTotal / 2;
+
+		for (int i = 0; i < numHijos; i++) {
+			int xHijo = xInicio + i * espacio;
+
+			// Línea vertical desde una posición específica del nodo padre
+			gotoxy(xHijo, y0 + 1);
+			cout << "|";
+
+			// Línea horizontal hacia el hijo (solo si xHijo y x0 no son iguales)
+			for (int j = min(xHijo, x0); j <= max(xHijo, x0); j++) {
+				gotoxy(j, y0 + 2);
+				cout << "-";
+			}
+
+			// Línea vertical hacia el hijo
+			gotoxy(xHijo, y0 + 3);
+			cout << "|";
+
+			// Llamada recursiva para mostrar el hijo
+			mostrarArbolB(x->hijos[i], xHijo, y0 + 4, espacio / 2);
+		}
+	}
+}
+
+// Elimina una ficha de desparasitación por idCerdo en el Árbol B
+void eliminarB(NodoB*& x, int id) {
+	if (!x) return;
+
+	int idx = 0;
+	// Buscar la clave en el nodo actual
+	while (idx < x->n && id > x->claves[idx].idCerdo)
+		idx++;
+
+	// Caso 1: La clave está en este nodo
+	if (idx < x->n && x->claves[idx].idCerdo == id) {
+		if (x->hoja) {
+			// Eliminar de hoja
+			for (int i = idx + 1; i < x->n; i++)
+				x->claves[i - 1] = x->claves[i];
+			x->n--;
+		}
+		else {
+			// Eliminar de nodo interno
+			NodoB* pred = x->hijos[idx];
+			if (pred->n >= ORDEN_B) {
+				// Reemplazar por predecesor
+				while (!pred->hoja)
+					pred = pred->hijos[pred->n];
+				x->claves[idx] = pred->claves[pred->n - 1];
+				eliminarB(x->hijos[idx], pred->claves[pred->n - 1].idCerdo);
+			}
+			else if (x->hijos[idx + 1]->n >= ORDEN_B) {
+				// Reemplazar por sucesor
+				NodoB* succ = x->hijos[idx + 1];
+				while (!succ->hoja)
+					succ = succ->hijos[0];
+				x->claves[idx] = succ->claves[0];
+				eliminarB(x->hijos[idx + 1], succ->claves[0].idCerdo);
+			}
+			else {
+				// Fusionar hijos y eliminar
+				NodoB* hijo = x->hijos[idx];
+				NodoB* hermano = x->hijos[idx + 1];
+				hijo->claves[ORDEN_B - 1] = x->claves[idx];
+				for (int i = 0; i < hermano->n; i++)
+					hijo->claves[i + ORDEN_B] = hermano->claves[i];
+				if (!hijo->hoja)
+					for (int i = 0; i <= hermano->n; i++)
+						hijo->hijos[i + ORDEN_B] = hermano->hijos[i];
+				hijo->n += hermano->n + 1;
+				for (int i = idx + 1; i < x->n; i++) {
+					x->claves[i - 1] = x->claves[i];
+					x->hijos[i] = x->hijos[i + 1];
+				}
+				x->n--;
+				delete hermano;
+				eliminarB(hijo, id);
+				if (x->n == 0) {
+					NodoB* temp = x;
+					x = hijo;
+					delete temp;
+				}
+			}
+		}
+	}
+	else if (!x->hoja) {
+		// Descender al hijo adecuado
+		bool flag = (idx == x->n);
+		if (x->hijos[idx]->n == ORDEN_B - 1) {
+			NodoB* hijo = x->hijos[idx];
+			NodoB* izq = idx > 0 ? x->hijos[idx - 1] : nullptr;
+			NodoB* der = idx < x->n ? x->hijos[idx + 1] : nullptr;
+			if (izq && izq->n >= ORDEN_B) {
+				// Prestar del hermano izquierdo
+				for (int i = hijo->n - 1; i >= 0; i--)
+					hijo->claves[i + 1] = hijo->claves[i];
+				if (!hijo->hoja)
+					for (int i = hijo->n; i >= 0; i--)
+						hijo->hijos[i + 1] = hijo->hijos[i];
+				hijo->claves[0] = x->claves[idx - 1];
+				if (!hijo->hoja)
+					hijo->hijos[0] = izq->hijos[izq->n];
+				x->claves[idx - 1] = izq->claves[izq->n - 1];
+				hijo->n++;
+				izq->n--;
+			}
+			else if (der && der->n >= ORDEN_B) {
+				// Prestar del hermano derecho
+				hijo->claves[hijo->n] = x->claves[idx];
+				if (!hijo->hoja)
+					hijo->hijos[hijo->n + 1] = der->hijos[0];
+				x->claves[idx] = der->claves[0];
+				for (int i = 1; i < der->n; i++)
+					der->claves[i - 1] = der->claves[i];
+				if (!der->hoja)
+					for (int i = 1; i <= der->n; i++)
+						der->hijos[i - 1] = der->hijos[i];
+				hijo->n++;
+				der->n--;
+			}
+			else {
+				// Fusionar con hermano
+				if (izq) {
+					izq->claves[izq->n] = x->claves[idx - 1];
+					for (int i = 0; i < hijo->n; i++)
+						izq->claves[izq->n + 1 + i] = hijo->claves[i];
+					if (!hijo->hoja)
+						for (int i = 0; i <= hijo->n; i++)
+							izq->hijos[izq->n + 1 + i] = hijo->hijos[i];
+					izq->n += hijo->n + 1;
+					for (int i = idx; i < x->n; i++) {
+						x->claves[i - 1] = x->claves[i];
+						x->hijos[i] = x->hijos[i + 1];
+					}
+					x->n--;
+					delete hijo;
+				}
+				else if (der) {
+					hijo->claves[hijo->n] = x->claves[idx];
+					for (int i = 0; i < der->n; i++)
+						hijo->claves[hijo->n + 1 + i] = der->claves[i];
+					if (!der->hoja)
+						for (int i = 0; i <= der->n; i++)
+							hijo->hijos[hijo->n + 1 + i] = der->hijos[i];
+					hijo->n += der->n + 1;
+					for (int i = idx + 1; i < x->n; i++) {
+						x->claves[i - 1] = x->claves[i];
+						x->hijos[i] = x->hijos[i + 1];
+					}
+					x->n--;
+					delete der;
+				}
+			}
+		}
+		if (flag && idx > x->n)
+			eliminarB(x->hijos[idx - 1], id);
+		else
+			eliminarB(x->hijos[idx], id);
+		if (x->n == 0 && !x->hoja) {
+			NodoB* temp = x;
+			x = x->hijos[0];
+			delete temp;
+		}
+	}
+}
+
+void recorrerPreordenB(NodoB* x) {
+	if (!x) return;
+	for (int i = 0; i < x->n; i++)
+		cout << x->claves[i].idCerdo << " ";
+	if (!x->hoja)
+		for (int i = 0; i <= x->n; i++)
+			recorrerPreordenB(x->hijos[i]);
+}
+
+void recorrerInordenB(NodoB* x) {
+	if (!x) return;
+	int i;
+	for (i = 0; i < x->n; i++) {
+		if (!x->hoja) recorrerInordenB(x->hijos[i]);
+		cout << x->claves[i].idCerdo << " ";
+	}
+	if (!x->hoja) recorrerInordenB(x->hijos[i]);
+}
+
+void recorrerPostordenB(NodoB* x) {
+	if (!x) return;
+	int i;
+	for (i = 0; i < x->n; i++)
+		if (!x->hoja) recorrerPostordenB(x->hijos[i]);
+	for (i = 0; i < x->n; i++)
+		cout << x->claves[i].idCerdo << " ";
+	if (!x->hoja) recorrerPostordenB(x->hijos[x->n]);
+}
+
+void vaciarArbolB(NodoB*& x) {
+	if (!x) return;
+	if (!x->hoja)
+		for (int i = 0; i <= x->n; i++)
+			vaciarArbolB(x->hijos[i]);
+	delete x;
+	x = nullptr;
 }
 
 int leerEntero(string mensaje, int x, int y) {
@@ -4792,6 +5363,54 @@ void TituloVaciarAVL() {
 	gotoxy(45, 4); cout << "****************************************";
 }
 
+void TituloIngresaFichaB() {
+	gotoxy(45, 0); cout << "************************************";
+	gotoxy(45, 1); cout << "**                                **";
+	gotoxy(45, 2); cout << "**    Ingresando ficha al ABB B   **";
+	gotoxy(45, 3); cout << "**                                **";
+	gotoxy(45, 4); cout << "************************************";
+}
+
+void TituloBuscarFichaB() {
+	gotoxy(45, 0); cout << "***************************************";
+	gotoxy(45, 1); cout << "**                                   **";
+	gotoxy(45, 2); cout << "**    Buscando ficha en el Arbol B   **";
+	gotoxy(45, 3); cout << "**                                   **";
+	gotoxy(45, 4); cout << "***************************************";
+}
+
+void TituloVerArbolB() {
+	gotoxy(45, 0); cout << "***********************************";
+	gotoxy(45, 1); cout << "**                               **";
+	gotoxy(45, 2); cout << "**    Visualizando el Arbol B    **";
+	gotoxy(45, 3); cout << "**                               **";
+	gotoxy(45, 4); cout << "***********************************";
+}
+
+void TituloEliminarFichaB() {
+	gotoxy(45, 0); cout << "***************************************";
+	gotoxy(45, 1); cout << "**                                   **";
+	gotoxy(45, 2); cout << "**    Eliminando ficha del Arbol B   **";
+	gotoxy(45, 3); cout << "**                                   **";
+	gotoxy(45, 4); cout << "***************************************";
+}
+
+void TituloRecorrerB() {
+	gotoxy(45, 0); cout << "**********************************";
+	gotoxy(45, 1); cout << "**                              **";
+	gotoxy(45, 2); cout << "**    Recorriendo el Arbol B    **";
+	gotoxy(45, 3); cout << "**                              **";
+	gotoxy(45, 4); cout << "**********************************";
+}
+
+void TituloVaciarB() {
+	gotoxy(45, 0); cout << "*****************************";
+	gotoxy(45, 1); cout << "**                         **";
+	gotoxy(45, 2); cout << "**    Vaciando el ABB B    **";
+	gotoxy(45, 3); cout << "**                         **";
+	gotoxy(45, 4); cout << "*****************************";
+}
+
 // Función para mover el cursor a una posición específica en la consola
 void gotoxy(int x, int y) {
 	HANDLE hcon;
@@ -4800,6 +5419,12 @@ void gotoxy(int x, int y) {
 	dwPos.X = x;
 	dwPos.Y = y;
 	SetConsoleCursorPosition(hcon, dwPos);
+}
+
+string toString(int num) {
+	stringstream ss;
+	ss << num;
+	return ss.str();
 }
 
 // Implementación de la función de manejo de eventos de control
